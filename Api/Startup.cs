@@ -17,13 +17,15 @@ namespace Api
 {
     public class Startup
     {
+        public IConfiguration Configuration { get; }
+
+        
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
         }
 
-        public IConfiguration Configuration { get; }
-
+       
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
@@ -32,8 +34,19 @@ namespace Api
             
             // Persistence
             services.AddDbContext<DataContext>(options => options.UseSqlite(Configuration.GetConnectionString("default")));
+            services.AddCors(opt =>
+            {
+                opt.AddPolicy("CorsPolicy", policy =>
+                {
+                    policy
+                        .AllowAnyHeader()
+                        .AllowAnyMethod()
+                        .WithOrigins("http://localhost:3000").Build();
+                });
+            });
         }
 
+        
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
@@ -43,7 +56,8 @@ namespace Api
             }
 
             // app.UseHttpsRedirection(); // Prevent redirection of http->https for the time being
-            
+
+            app.UseCors("CorsPolicy");
             app.UseRouting();
             app.UseAuthorization();
             

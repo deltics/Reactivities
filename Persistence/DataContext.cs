@@ -6,6 +6,7 @@ namespace Persistence
 {
     public class DataContext : DbContext
     {
+        public DbSet<Activity> Activities { get; set; }
         public DbSet<Value> Values { get; set; }
         
         
