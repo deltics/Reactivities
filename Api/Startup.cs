@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Application;
+using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -44,6 +46,11 @@ namespace Api
                         .WithOrigins("http://localhost:3000").Build();
                 });
             });
+
+            // We only need to add the ASSEMBLY - the specific type we use to get to that
+            //  assembly ref is irrelevant.  We aren't referencing the type, only the 
+            //  assembly so that MediatR can discover ALL the types in that assembly.
+            services.AddMediatR(typeof(List.Handler).Assembly);
         }
 
         
