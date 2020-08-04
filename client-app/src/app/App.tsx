@@ -1,9 +1,10 @@
-import React, {useState, useEffect, Fragment} from 'react';
-import axios from 'axios';
+import React, {useState, useEffect, Fragment, SyntheticEvent} from 'react';
 import {Container} from "semantic-ui-react";
 import {IActivity} from "./models/activity";
 import NavBar from "../features/nav/NavBar";
 import ActivityDashboard from "../features/activities/dashboard/ActivityDashboard";
+import agent from "./api/agent";
+import LoadingComponent from "./layout/LoadingComponent";
 
 
 const App = () => {
@@ -17,6 +18,9 @@ const App = () => {
     const [activities, setActivities] = useState<IActivity[]>([]);
     const [selectedActivity, setSelectedActivity] = useState<IActivity | null>(null);
     const [editMode, setEditMode] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [submitting, setSubmitting] = useState(false);
+    const [target, setTarget] = useState('');
 
 
     const onOpenCreateForm = () => {
@@ -28,21 +32,42 @@ const App = () => {
         setEditMode(false);
         setSelectedActivity(activities.filter(a => a.id === id)[0]);
     }
-    
+
     const doCreateActivity = (activity: IActivity) => {
-        setActivities([...activities, activity]);
-        setSelectedActivity(activity);
-        setEditMode(false);
+        setSubmitting(true);
+        agent.Activities.create(activity)
+            .then(() => {
+                    setActivities([...activities, activity]);
+                    setSelectedActivity(activity);
+                    setEditMode(false);
+                    setSubmitting(false);
+                }
+            )
     }
-    
-    const doActivityUpdated = (activity: IActivity) => {
-        setActivities([...activities.filter(a => a.id !== activity.id), activity]);
-        setSelectedActivity(activity);
-        setEditMode(false);
+
+    const doUpdateActivity = (activity: IActivity) => {
+        setSubmitting(true);
+        agent.Activities.update(activity)
+            .then(() => {
+                    setActivities([...activities.filter(a => a.id !== activity.id), activity]);
+                    setSelectedActivity(activity);
+                    setEditMode(false);
+                    setSubmitting(false);
+                }
+            );
     }
-    
-    const doDeleteActivity = (id: string) => {
-        setActivities([...activities.filter(a => a.id !== id)]);
+
+    const doDeleteActivity = (event: SyntheticEvent<HTMLButtonElement>, id: string) => {
+        setSubmitting(true);
+        setTarget(event.currentTarget.name);
+        agent.Activities.delete(id)
+            .then(() => {
+                    setActivities([...activities.filter(a => a.id !== id)]);
+                    setSubmitting(false);
+                    setSelectedActivity(null);
+                    setTarget('');
+                }
+            );
     }
 
 
@@ -51,39 +76,37 @@ const App = () => {
     //  empty arg ([]) to the 2nd param if we modify props in componentDidMount otherwise we
     //  trigger a never-ending cycle of "did update" calls.
     useEffect(() => {
-        axios.get<IActivity[]>('http://localhost:5000/api/activities')
+        agent.Activities.list()
             .then((response) => {
                 let activities: IActivity[] = [];
-                
-                response.data.forEach(activity => {
+
+                response.forEach(activity => {
                     activity.date = activity.date.split('.')[0];
                     activities.push(activity);
                 })
-                
+
                 setActivities(activities);
             })
+            .then(() => setLoading(false))
     }, [])
-
 
     return (
         <Fragment>
             <NavBar openCreateForm={onOpenCreateForm}/>
             <Container style={{marginTop: '7em'}}>
-                <ActivityDashboard activities={activities}
-                                   selectedActivity={selectedActivity!}
-                                   editMode={editMode}
-                                   setEditMode={setEditMode}
-                                   setSelectedActivity={setSelectedActivity}
-                                   doCreateActivity={doCreateActivity}
-                                   doSelectActivity={doSelectActivity}
-                                   doUpdateActivity={doActivityUpdated}
-                                   doDeleteActivity={doDeleteActivity}
-                />
+                {loading && <LoadingComponent inverted={true} content='Loading activities...'/>}
+                {!loading && <ActivityDashboard activities={activities}
+                                                selectedActivity={selectedActivity!}
+                                                editMode={editMode}
+                                                submitting={submitting}
+                                                target={target}
+                                                setEditMode={setEditMode}
+                                                setSelectedActivity={setSelectedActivity}
+                                                doCreateActivity={doCreateActivity}
+                                                doSelectActivity={doSelectActivity}
+                                                doUpdateActivity={doUpdateActivity}
+                                                doDeleteActivity={doDeleteActivity}/>}
             </Container>
-
-            <p>
-                Edit <code>src/App.tsx</code> and save to reload.
-            </p>
         </Fragment>
     )
 }

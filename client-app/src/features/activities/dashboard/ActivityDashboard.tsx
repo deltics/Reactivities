@@ -1,4 +1,4 @@
-import React from 'react'
+import React, {SyntheticEvent} from 'react'
 import {Grid} from "semantic-ui-react";
 import {IActivity} from "../../../app/models/activity";
 import ActivityList from "./ActivityList";
@@ -11,11 +11,13 @@ interface IProps {
     doSelectActivity: (id: string) => void,
     selectedActivity: IActivity | null,
     editMode: boolean,
+    submitting: boolean,
+    target: string,
     setEditMode: (editMode: boolean) => void,
     setSelectedActivity: (activity: IActivity | null) => void,
     doCreateActivity: (activity: IActivity) => void,
     doUpdateActivity: (activity: IActivity) => void,
-    doDeleteActivity: (id: string) => void
+    doDeleteActivity: (event: SyntheticEvent<HTMLButtonElement>, id: string) => void
 }
 
 
@@ -24,6 +26,8 @@ const ActivityDashboard: React.FC<IProps> = ({
                                                  doSelectActivity,
                                                  selectedActivity,
                                                  editMode,
+                                                 submitting,
+                                                 target,
                                                  setEditMode,
                                                  setSelectedActivity,
                                                  doCreateActivity,
@@ -34,6 +38,8 @@ const ActivityDashboard: React.FC<IProps> = ({
         <Grid>
             <Grid.Column width={10}>
                 <ActivityList activities={activities}
+                              submitting={submitting}
+                              target={target}
                               doSelectActivity={doSelectActivity}
                               doDeleteActivity={doDeleteActivity}
                 />
@@ -46,6 +52,7 @@ const ActivityDashboard: React.FC<IProps> = ({
                                 setSelectedActivity={setSelectedActivity}/>}
                 {/* Setting a key ensures that when props change we force an update of the form component */}
                 {editMode && <ActivityForm activity={selectedActivity!}
+                                           submitting={submitting}
                                            key={selectedActivity ? selectedActivity.id : 0}
                                            setEditMode={setEditMode}
                                            onActivityCreated={doCreateActivity}
