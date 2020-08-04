@@ -19,14 +19,30 @@ const App = () => {
     const [editMode, setEditMode] = useState(false);
 
 
-    const openCreateForm = () => {
+    const onOpenCreateForm = () => {
         setSelectedActivity(null);
         setEditMode(true);
     }
 
-    const selectActivity = (id: string) => {
+    const doSelectActivity = (id: string) => {
         setEditMode(false);
         setSelectedActivity(activities.filter(a => a.id === id)[0]);
+    }
+    
+    const doCreateActivity = (activity: IActivity) => {
+        setActivities([...activities, activity]);
+        setSelectedActivity(activity);
+        setEditMode(false);
+    }
+    
+    const doActivityUpdated = (activity: IActivity) => {
+        setActivities([...activities.filter(a => a.id !== activity.id), activity]);
+        setSelectedActivity(activity);
+        setEditMode(false);
+    }
+    
+    const doDeleteActivity = (id: string) => {
+        setActivities([...activities.filter(a => a.id !== id)]);
     }
 
 
@@ -37,21 +53,31 @@ const App = () => {
     useEffect(() => {
         axios.get<IActivity[]>('http://localhost:5000/api/activities')
             .then((response) => {
-                setActivities(response.data)
+                let activities: IActivity[] = [];
+                
+                response.data.forEach(activity => {
+                    activity.date = activity.date.split('.')[0];
+                    activities.push(activity);
+                })
+                
+                setActivities(activities);
             })
     }, [])
 
 
     return (
         <Fragment>
-            <NavBar openCreateForm={openCreateForm}/>
+            <NavBar openCreateForm={onOpenCreateForm}/>
             <Container style={{marginTop: '7em'}}>
                 <ActivityDashboard activities={activities}
-                                   selectActivity={selectActivity}
                                    selectedActivity={selectedActivity!}
                                    editMode={editMode}
                                    setEditMode={setEditMode}
                                    setSelectedActivity={setSelectedActivity}
+                                   doCreateActivity={doCreateActivity}
+                                   doSelectActivity={doSelectActivity}
+                                   doUpdateActivity={doActivityUpdated}
+                                   doDeleteActivity={doDeleteActivity}
                 />
             </Container>
 

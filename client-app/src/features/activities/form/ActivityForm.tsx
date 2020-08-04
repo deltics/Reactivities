@@ -1,15 +1,18 @@
-import React, {ChangeEvent, FormEvent, useState} from 'react'
+import React, {FormEvent, useState} from 'react'
 import {Button, Form, Segment} from "semantic-ui-react";
 import {IActivity} from "../../../app/models/activity";
+import {v4 as uuid} from 'uuid';
 
 
 interface IProps {
     activity: IActivity | null,
     setEditMode: (enabled: boolean) => void,
+    onActivityCreated: (activity: IActivity) => void,
+    onActivityUpdated: (activity: IActivity) => void
 }
 
 
-const ActivityForm: React.FC<IProps> = ({activity: initialActivity, setEditMode}) => {
+const ActivityForm: React.FC<IProps> = ({activity: initialActivity, setEditMode, onActivityUpdated, onActivityCreated}) => {
 
     const initializeForm = () => {
         if (initialActivity){
@@ -36,7 +39,15 @@ const ActivityForm: React.FC<IProps> = ({activity: initialActivity, setEditMode}
     }
     
     const onSubmitForm = () => {
-        console.log(activity);
+        if (activity.id.length === 0) {
+            let newActivity = {
+                ...activity,
+                id: uuid()
+            };
+            onActivityCreated(newActivity);
+        } else {
+            onActivityUpdated(activity);
+        }
     }
 
     const [activity, setActivity] = useState<IActivity>(initializeForm);
@@ -47,7 +58,7 @@ const ActivityForm: React.FC<IProps> = ({activity: initialActivity, setEditMode}
                 <Form.Input placeholder='Title' name='title' onChange={onInputChange} value={activity.title}/>
                 <Form.TextArea rows={2} placeholder='Description' name='description' onChange={onInputChange} value={activity.description}/>
                 <Form.Input placeholder='Category' name='category' onChange={onInputChange} value={activity.category}/>
-                <Form.Input type='date' placeholder='Date' name='date' onChange={onInputChange} value={activity.date}/>
+                <Form.Input type='datetime-local' placeholder='Date' name='date' onChange={onInputChange} value={activity.date}/>
                 <Form.Input placeholder='City' name='city' onChange={onInputChange} value={activity.city}/>
                 <Form.Input placeholder='Venue' name='venue' onChange={onInputChange} value={activity.venue}/>
                 <Button floated='right' positive type='submit' content='Submit' />
