@@ -3,21 +3,36 @@ import {Grid} from "semantic-ui-react";
 import {IActivity} from "../../../app/models/activity";
 import ActivityList from "./ActivityList";
 import ActivityDetail from "../details/ActivityDetail";
+import ActivityForm from "../form/ActivityForm";
 
 
 interface IProps {
-    activities: IActivity[]
+    activities: IActivity[],
+    selectActivity: (id: string) => void,
+    selectedActivity: IActivity | null,
+    editMode: boolean,
+    setEditMode: (editMode: boolean) => void,
+    setSelectedActivity: (activity: IActivity | null) => void
 }
 
 
-const ActivityDashboard: React.FC<IProps> = ({activities}) => {
+const ActivityDashboard: React.FC<IProps> = ({activities, selectActivity, selectedActivity, editMode, setEditMode, setSelectedActivity}) => {
     return (
         <Grid>
             <Grid.Column width={10}>
-                <ActivityList activities={activities}/>
+                <ActivityList activities={activities}
+                              selectActivity={selectActivity}
+                />
             </Grid.Column>
             <Grid.Column width={6}>
-                <ActivityDetail />
+                {/* The && operator: everything to the RHS of && is only output if the LHS is true/not null */}
+                {selectedActivity && !editMode &&
+                <ActivityDetail activity={selectedActivity}
+                                setEditMode={setEditMode}
+                                setSelectedActivity={setSelectedActivity}/>}
+                {editMode && <ActivityForm activity={selectedActivity!}
+                                           setEditMode={setEditMode}
+                />}
             </Grid.Column>
         </Grid>
     )
