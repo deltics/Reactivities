@@ -1,30 +1,18 @@
-import React, {FormEvent, useState} from 'react'
+import React, {FormEvent, useContext, useState} from 'react'
 import {Button, Form, Segment} from "semantic-ui-react";
 import {IActivity} from "../../../app/models/activity";
 import {v4 as uuid} from 'uuid';
+import ActivityStore from "../../../app/stores/activityStore";
+import {observer} from "mobx-react-lite";
 
 
-interface IProps {
-    activity: IActivity | null,
-    submitting: boolean,
-    setEditMode: (enabled: boolean) => void,
-    onActivityCreated: (activity: IActivity) => void,
-    onActivityUpdated: (activity: IActivity) => void
-}
+const ActivityForm: React.FC = () => {
 
-
-const ActivityForm: React.FC<IProps> = (
-    {
-        activity: initialActivity,
-        setEditMode,
-        submitting,
-        onActivityUpdated,
-        onActivityCreated
-    }) => {
+    const activityStore = useContext(ActivityStore);
 
     const initializeForm = () => {
-        if (initialActivity) {
-            return initialActivity
+        if (activityStore.selectedActivity) {
+            return activityStore.selectedActivity
         } else {
             return {
                 id: '',
@@ -37,6 +25,8 @@ const ActivityForm: React.FC<IProps> = (
             }
         }
     };
+    let [activity, setActivity] = useState<IActivity>(initializeForm);
+
 
     // FormEvent<T> needs both Input and TextArea elements in the type union because
     //  we will be re-using this handler for all form inputs, including the textarea
@@ -46,19 +36,15 @@ const ActivityForm: React.FC<IProps> = (
         setActivity({...activity, [name]: value});
     }
 
-    const onSubmitForm = () => {
-        if (activity.id.length === 0) {
-            let newActivity = {
-                ...activity,
-                id: uuid()
-            };
-            onActivityCreated(newActivity);
-        } else {
-            onActivityUpdated(activity);
-        }
-    }
+    const onSubmitForm = async () => {
+        const isNew = (activity.id.length === 0);
 
-    const [activity, setActivity] = useState<IActivity>(initializeForm);
+        if (isNew) {
+            activity = {...activity, id: uuid()};
+        }
+
+        await activityStore.saveActivity(activity, isNew);
+    }
 
     return (
         <Segment clearing>
@@ -71,12 +57,13 @@ const ActivityForm: React.FC<IProps> = (
                             value={activity.date}/>
                 <Form.Input placeholder='City' name='city' onChange={onInputChange} value={activity.city}/>
                 <Form.Input placeholder='Venue' name='venue' onChange={onInputChange} value={activity.venue}/>
-                <Button loading={submitting} floated='right' positive type='submit' content='Submit'/>
-                <Button onClick={() => setEditMode(false)} floated='right' type='button' content='Cancel'/>
+                <Button loading={activityStore.submitting} floated='right' positive type='submit' content='Submit'/>
+                <Button onClick={() => activityStore.selectActivity(activity.id, false)} floated='right' type='button'
+                        content='Cancel'/>
             </Form>
         </Segment>
     )
 }
 
 
-export default ActivityForm
+export default observer(ActivityForm)

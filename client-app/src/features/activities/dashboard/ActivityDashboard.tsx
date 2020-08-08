@@ -1,67 +1,31 @@
-import React, {SyntheticEvent} from 'react'
+import React, {useContext} from 'react'
 import {Grid} from "semantic-ui-react";
-import {IActivity} from "../../../app/models/activity";
 import ActivityList from "./ActivityList";
 import ActivityDetail from "../details/ActivityDetail";
 import ActivityForm from "../form/ActivityForm";
+import {observer} from "mobx-react-lite";
+import ActivityStore from "../../../app/stores/activityStore";
 
 
-interface IProps {
-    activities: IActivity[],
-    doSelectActivity: (id: string) => void,
-    selectedActivity: IActivity | null,
-    editMode: boolean,
-    submitting: boolean,
-    target: string,
-    setEditMode: (editMode: boolean) => void,
-    setSelectedActivity: (activity: IActivity | null) => void,
-    doCreateActivity: (activity: IActivity) => void,
-    doUpdateActivity: (activity: IActivity) => void,
-    doDeleteActivity: (event: SyntheticEvent<HTMLButtonElement>, id: string) => void
-}
-
-
-const ActivityDashboard: React.FC<IProps> = ({
-                                                 activities,
-                                                 doSelectActivity,
-                                                 selectedActivity,
-                                                 editMode,
-                                                 submitting,
-                                                 target,
-                                                 setEditMode,
-                                                 setSelectedActivity,
-                                                 doCreateActivity,
-                                                 doUpdateActivity,
-                                                 doDeleteActivity
-                                             }) => {
+const ActivityDashboard: React.FC = () => {
+    
+    const activityStore = useContext(ActivityStore);
+    
     return (
         <Grid>
             <Grid.Column width={10}>
-                <ActivityList activities={activities}
-                              submitting={submitting}
-                              target={target}
-                              doSelectActivity={doSelectActivity}
-                              doDeleteActivity={doDeleteActivity}
-                />
+                <ActivityList />
             </Grid.Column>
             <Grid.Column width={6}>
-                {/* The && operator: everything to the RHS of && is only output if the LHS is true/not null */}
-                {selectedActivity && !editMode &&
-                <ActivityDetail activity={selectedActivity}
-                                setEditMode={setEditMode}
-                                setSelectedActivity={setSelectedActivity}/>}
+                {/* The && operator: everything to the RHS of && is only output if the LHS is not falsy */}
+                {activityStore.selectedActivity && !activityStore.editing &&
+                <ActivityDetail />}
                 {/* Setting a key ensures that when props change we force an update of the form component */}
-                {editMode && <ActivityForm activity={selectedActivity!}
-                                           submitting={submitting}
-                                           key={selectedActivity ? selectedActivity.id : 0}
-                                           setEditMode={setEditMode}
-                                           onActivityCreated={doCreateActivity}
-                                           onActivityUpdated={doUpdateActivity}
-                />}
+                {activityStore.editing && <ActivityForm key={activityStore.selectedActivity ? activityStore.selectedActivity.id : 0} />}
             </Grid.Column>
         </Grid>
     )
 }
 
 
-export default ActivityDashboard
+export default observer(ActivityDashboard)
