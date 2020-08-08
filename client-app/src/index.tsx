@@ -6,6 +6,7 @@ import * as serviceWorker from './serviceWorker';
 import './app/layout/styles.css';
 import 'semantic-ui-css/semantic.min.css';
 import ScrollToTop from "./app/layout/ScrollToTop";
+import 'mobx-react-lite/batchingForReactDom';
 
 
 ReactDOM.render(

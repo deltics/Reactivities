@@ -1,8 +1,12 @@
-import React, {useContext, useEffect} from 'react'
-import {Button, Card, Container, Image} from "semantic-ui-react";
+import React, {useContext, useEffect, Fragment} from 'react'
+import {Grid} from "semantic-ui-react";
 import ActivityStore from "../../../app/stores/activityStore";
 import {observer} from "mobx-react-lite";
-import {Link, RouteComponentProps} from 'react-router-dom';
+import {RouteComponentProps} from 'react-router-dom';
+import ActivityDetailChat from "./ActivityDetailChat";
+import ActivityDetailInfo from "./ActivityDetailInfo";
+import ActivityDetailHeader from "./ActivityDetailHeader";
+import ActivityDetailSidebar from "./ActivityDetailSidebar";
 import LoadingComponent from "../../../app/layout/LoadingComponent";
 
 
@@ -22,30 +26,20 @@ const ActivityDetail: React.FC<RouteComponentProps<RouteParams>> = ({match, hist
 
 
     return (
-        <Container>
-            {activityStore.loading && <LoadingComponent inverted={true} content='Loading activity...'/>}
-            {activity && <Card fluid>
-                <Image src={`/assets/categoryImages/${activity.category}.jpg`} wrapped ui={false}/>
-                <Card.Content>
-                    <Card.Header>{activity.title}</Card.Header>
-                    <Card.Meta>
-                        <span>{activity.date}</span>
-                    </Card.Meta>
-                    <Card.Description>
-                        {activity.description}
-                    </Card.Description>
-                </Card.Content>
-                <Card.Content extra>
-                    <Button.Group widths={2}>
-                        <Button as={Link} to={`/manage/${activity.id}`} basic color='blue'
-                                content='Edit'/>
-                        <Button onClick={() => history.push('/activities')} basic color='grey'
-                                content='Cancel'/>
-                    </Button.Group>
-                </Card.Content>
-            </Card>}
-        </Container>
-    )
+        <Fragment>
+            {activityStore.loading && <LoadingComponent content='Loading activity...' />}
+            {activity && <Grid>
+                <Grid.Column width={10}>
+                    <ActivityDetailHeader activity={activity}/>
+                    <ActivityDetailInfo activity={activity}/>
+                    <ActivityDetailChat/>
+                </Grid.Column>
+                <Grid.Column width={6}>
+                    <ActivityDetailSidebar/>
+                </Grid.Column>
+            </Grid>}
+        </Fragment>
+    );
 }
 
 

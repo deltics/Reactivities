@@ -19,9 +19,17 @@ class ActivityStore {
 
 
     @computed get activitiesByDate() {
-        return Array.from(this.activityRegistry.values())
+        const activities: IActivity[] = Array.from(this.activityRegistry.values());
+
+        const sortedActivities = activities
             .slice()
             .sort((a, b) => Date.parse(a.date) - Date.parse(b.date));
+
+        return Object.entries(sortedActivities.reduce((activities, activity) => {
+            const date = activity.date.split('T')[0];
+            activities[date] = activities[date] ? [...activities[date], activity] : [activity];
+            return activities;
+        }, {} as { [key: string]: IActivity[] }));
     }
 
 
@@ -48,26 +56,26 @@ class ActivityStore {
     @action
     loadActivity = async (id: string) => {
         let activity = this.activityRegistry.get(id);
-        
+
         if (activity) {
             this.activity = activity;
         } else {
             this.loading = true;
             try {
                 activity = await agent.Activities.details(id);
-                runInAction('after loading specific activity', () =>{
+                runInAction('after loading specific activity', () => {
                     this.activity = activity;
                 })
             } catch (err) {
                 console.error(err);
             }
-            runInAction('cleanup after loading specific activity', () =>{
+            runInAction('cleanup after loading specific activity', () => {
                 this.loading = false;
             })
         }
     }
-    
-    
+
+
     @action
     clearActivity = () => {
         this.activity = null;
