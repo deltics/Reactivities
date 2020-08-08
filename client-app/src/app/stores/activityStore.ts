@@ -11,7 +11,7 @@ class ActivityStore {
 
     @observable activityRegistry = new Map();
     @observable activities: IActivity[] = [];
-    @observable selectedActivity: IActivity | undefined = undefined;
+    @observable activity: IActivity | null = null;
     @observable loading = false;
     @observable editing = false;
     @observable submitting = false;
@@ -46,9 +46,38 @@ class ActivityStore {
 
 
     @action
+    loadActivity = async (id: string) => {
+        let activity = this.activityRegistry.get(id);
+        
+        if (activity) {
+            this.activity = activity;
+        } else {
+            this.loading = true;
+            try {
+                activity = await agent.Activities.details(id);
+                runInAction('after loading specific activity', () =>{
+                    this.activity = activity;
+                })
+            } catch (err) {
+                console.error(err);
+            }
+            runInAction('cleanup after loading specific activity', () =>{
+                this.loading = false;
+            })
+        }
+    }
+    
+    
+    @action
+    clearActivity = () => {
+        this.activity = null;
+    }
+
+
+    @action
     selectActivity = (id: string | null, editing: boolean) => {
         this.editing = editing;
-        this.selectedActivity = this.activityRegistry.get(id);
+        this.activity = this.activityRegistry.get(id);
     }
 
 

@@ -1,31 +1,47 @@
-import React, {FormEvent, useContext, useState} from 'react'
+import React, {FormEvent, useContext, useEffect, useState} from 'react'
 import {Button, Form, Segment} from "semantic-ui-react";
 import {IActivity} from "../../../app/models/activity";
 import {v4 as uuid} from 'uuid';
 import ActivityStore from "../../../app/stores/activityStore";
 import {observer} from "mobx-react-lite";
+import {RouteComponentProps} from 'react-router-dom';
 
 
-const ActivityForm: React.FC = () => {
+interface RouteParams {
+    id: string
+}
+
+
+const ActivityForm: React.FC<RouteComponentProps<RouteParams>> = (
+    {
+        match,
+        history
+    }) => {
 
     const activityStore = useContext(ActivityStore);
 
-    const initializeForm = () => {
-        if (activityStore.selectedActivity) {
-            return activityStore.selectedActivity
-        } else {
-            return {
-                id: '',
-                title: '',
-                description: '',
-                category: '',
-                date: '',
-                city: '',
-                venue: ''
-            }
+    let [activity, setActivity] = useState<IActivity>({
+        id: '',
+        title: '',
+        description: '',
+        category: '',
+        date: '',
+        city: '',
+        venue: ''
+    });
+
+    useEffect(() => {
+        if (match.params.id) {
+            activityStore.loadActivity(match.params.id)
+                .then(() => {
+                    activityStore.activity && setActivity(activityStore.activity);
+                });
         }
-    };
-    let [activity, setActivity] = useState<IActivity>(initializeForm);
+
+        return () => {
+            activityStore.clearActivity();
+        };
+    }, [activityStore, match.params.id]);
 
 
     // FormEvent<T> needs both Input and TextArea elements in the type union because
@@ -42,8 +58,10 @@ const ActivityForm: React.FC = () => {
         if (isNew) {
             activity = {...activity, id: uuid()};
         }
-
-        await activityStore.saveActivity(activity, isNew);
+        await activityStore.saveActivity(activity, isNew)
+            .then(() => {
+                history.push(`/activities/${activity.id}`) 
+            });
     }
 
     return (
@@ -58,7 +76,7 @@ const ActivityForm: React.FC = () => {
                 <Form.Input placeholder='City' name='city' onChange={onInputChange} value={activity.city}/>
                 <Form.Input placeholder='Venue' name='venue' onChange={onInputChange} value={activity.venue}/>
                 <Button loading={activityStore.submitting} floated='right' positive type='submit' content='Submit'/>
-                <Button onClick={() => activityStore.selectActivity(activity.id, false)} floated='right' type='button'
+                <Button onClick={() => history.push(`/activities/${activity.id}`)} floated='right' type='button'
                         content='Cancel'/>
             </Form>
         </Segment>
