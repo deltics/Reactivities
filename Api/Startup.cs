@@ -1,4 +1,6 @@
+using Api.Middleware;
 using Application.Activities;
+using FluentValidation.AspNetCore;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -12,7 +14,7 @@ namespace Api
 {
     public class Startup
     {
-        public IConfiguration Configuration { get; }
+        private IConfiguration Configuration { get; }
 
         
         public Startup(IConfiguration configuration)
@@ -25,13 +27,17 @@ namespace Api
         public void ConfigureServices(IServiceCollection services)
         {
             // AspNetCore services
-            services.AddControllers();
+            services.AddControllers()
+                .AddFluentValidation(config =>
+                {
+                    config.RegisterValidatorsFromAssemblyContaining<Create>();
+                });
             
             // Persistence
             services.AddDbContext<DataContext>(options => options.UseSqlite(Configuration.GetConnectionString("default")));
-            services.AddCors(opt =>
+            services.AddCors(options =>
             {
-                opt.AddPolicy("CorsPolicy", policy =>
+                options.AddPolicy("CorsPolicy", policy =>
                 {
                     policy
                         .AllowAnyHeader()
@@ -50,9 +56,11 @@ namespace Api
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UseMiddleware<ErrorHandling>();
+            
             if (env.IsDevelopment())
             {
-                app.UseDeveloperExceptionPage();
+                // app.UseDeveloperExceptionPage();
             }
 
             // app.UseHttpsRedirection(); // Prevent redirection of http->https for the time being

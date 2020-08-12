@@ -37,19 +37,25 @@ class ActivityStore {
     loadActivities = async () => {
         this.loading = true;
 
-        const activities = await agent.Activities.list();
+        try {
+            const activities = await agent.Activities.list();
 
-        runInAction('loading activities', () => {
-            try {
+            runInAction('grouping activities', () => {
                 activities.forEach(activity => {
                     activity.date = activity.date.split('.')[0];
                     this.activityRegistry.set(activity.id, activity);
                 });
-            } catch (err) {
+            });
+        } catch (err) {
+            runInAction('error loading activities', () => {
                 console.error(err);
-            }
-            this.loading = false
-        });
+            });
+        } finally {
+            runInAction('cleanup after loading activities', () => {
+
+                this.loading = false
+            });
+        }
     }
 
 
@@ -67,11 +73,14 @@ class ActivityStore {
                     this.activity = activity;
                 })
             } catch (err) {
-                console.error(err);
+                runInAction('error when loading specific activity', () => {
+                    console.error(err);
+                })
+            } finally {
+                runInAction('cleanup after loading specific activity', () => {
+                    this.loading = false;
+                });
             }
-            runInAction('cleanup after loading specific activity', () => {
-                this.loading = false;
-            })
         }
     }
 
