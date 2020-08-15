@@ -4,6 +4,7 @@ import {Link} from "react-router-dom";
 import React, {useContext} from "react";
 import ActivityStore from "../../../app/stores/activityStore";
 import {IActivity} from "../../../app/models/activity";
+import {format} from 'date-fns';
 
 
 interface IProps {
@@ -29,7 +30,7 @@ const ActivityListItem: React.FC<IProps> = ({activity}) => {
                 </Item.Group>
             </Segment>
             <Segment>
-                <Icon name='clock'/> {activity.date}
+                <Icon name='clock'/> {format(activity.date, 'h:mm a')}
                 <Icon name='marker'/> {activity.venue}, {activity.city}
             </Segment>
             <Segment secondary> Attendees will be shown here </Segment>

@@ -1,14 +1,37 @@
 import axios, {AxiosResponse} from 'axios';
 import {IActivity} from "../models/activity";
+import {history} from '../..';
+import {toast} from 'react-toastify';
 
 
 axios.defaults.baseURL = 'http://localhost:5000/api/';
 
+axios.interceptors.response.use(undefined, error => {
+    
+    if ((error.message === 'Network Error') && (!error.response)) {
+        toast.error('Network error.  Check that the server is available.');
+    }
+    const {status, data, config} = error.response;
 
-const responseBody = (response: AxiosResponse) => response.data;
+    // '/notfound' doesn't actually identify the NotFound component - it is simply an
+    //  invalid url.  i.e. it _literally_ does not exist and so forces the NotFound route.
+
+    if (status === 404) {
+        history.push('/notfound');
+    } else if ((status === 400) && (config.method === 'get') && data.errors.hasOwnProperty('id')) {
+        history.push('/notfound');
+    } else if (status === 500) {
+        toast.error('An error occured on the server.  Check the server logs for more information.');
+    } else {
+        console.error(error.response);
+    }
+});
 
 
-const sleep = (ms: number) => (response: AxiosResponse) => 
+const responseBody = (response: AxiosResponse) => (response?.data ?? null);
+
+
+const sleep = (ms: number) => (response: AxiosResponse) =>
     new Promise<AxiosResponse>(resolve => setTimeout(() => resolve(response), ms));
 
 

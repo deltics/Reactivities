@@ -2,6 +2,8 @@ import {action, computed, configure, observable, runInAction} from "mobx";
 import {createContext} from "react";
 import {IActivity} from "../models/activity";
 import agent from "../api/agent";
+import {format} from "date-fns";
+import {v4 as uuid} from "uuid";
 
 
 configure({enforceActions: 'always'});
@@ -23,10 +25,10 @@ class ActivityStore {
 
         const sortedActivities = activities
             .slice()
-            .sort((a, b) => Date.parse(a.date) - Date.parse(b.date));
+            .sort((a, b) => a.date.getTime() - b.date.getTime());
 
         return Object.entries(sortedActivities.reduce((activities, activity) => {
-            const date = activity.date.split('T')[0];
+            const date = format(activity.date, 'eeee do MMMM, yyyy');
             activities[date] = activities[date] ? [...activities[date], activity] : [activity];
             return activities;
         }, {} as { [key: string]: IActivity[] }));
@@ -37,19 +39,25 @@ class ActivityStore {
     loadActivities = async () => {
         this.loading = true;
 
-        const activities = await agent.Activities.list();
+        try {
+            const activities = await agent.Activities.list();
 
-        runInAction('loading activities', () => {
-            try {
+            runInAction('grouping activities', () => {
                 activities.forEach(activity => {
-                    activity.date = activity.date.split('.')[0];
+                    activity.date = new Date(activity.date);
                     this.activityRegistry.set(activity.id, activity);
                 });
-            } catch (err) {
+            });
+        } catch (err) {
+            runInAction('error loading activities', () => {
                 console.error(err);
-            }
-            this.loading = false
-        });
+            });
+        } finally {
+            runInAction('cleanup after loading activities', () => {
+
+                this.loading = false
+            });
+        }
     }
 
 
@@ -59,19 +67,26 @@ class ActivityStore {
 
         if (activity) {
             this.activity = activity;
+            return activity;
         } else {
             this.loading = true;
             try {
                 activity = await agent.Activities.details(id);
                 runInAction('after loading specific activity', () => {
+                    activity && (activity.date = new Date(activity.date));
                     this.activity = activity;
-                })
+                    this.activityRegistry.set(activity.id, activity);
+                });
+                return activity;
             } catch (err) {
-                console.error(err);
+                runInAction('error when loading specific activity', () => {
+                    console.error(err);
+                })
+            } finally {
+                runInAction('cleanup after loading specific activity', () => {
+                    this.loading = false;
+                });
             }
-            runInAction('cleanup after loading specific activity', () => {
-                this.loading = false;
-            })
         }
     }
 
@@ -90,10 +105,13 @@ class ActivityStore {
 
 
     @action
-    saveActivity = async (activity: IActivity, create: boolean) => {
+    saveActivity = async (activity: IActivity) => {
         this.submitting = true;
         try {
-            if (create) {
+            const isNew = (!activity.id);
+            
+            if (isNew) {
+                activity.id = uuid();
                 await agent.Activities.create(activity);
             } else {
                 await agent.Activities.update(activity);
