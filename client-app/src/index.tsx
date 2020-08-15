@@ -12,6 +12,7 @@ import App from './app/App';
 import ScrollToTop from "./app/layout/ScrollToTop";
 import './app/layout/styles.css';
 
+
 // Initialise DateFns
 dateFnsLocalizer();
 

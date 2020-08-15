@@ -1,9 +1,11 @@
 using Api.Middleware;
 using Application.Activities;
 using FluentValidation.AspNetCore;
+using Identity;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -50,6 +52,16 @@ namespace Api
             //  assembly ref is irrelevant.  We aren't referencing the type, only the 
             //  assembly so that MediatR can discover ALL the types in that assembly.
             services.AddMediatR(typeof(List.Handler).Assembly);
+            
+            // Configure Identity Framework
+            var identity = services.AddIdentityCore<AppUser>();
+            var identityBuilder = new IdentityBuilder(identity.UserType, identity.Services);
+            identityBuilder.AddEntityFrameworkStores<DataContext>();
+            identityBuilder.AddSignInManager<SignInManager<AppUser>>();
+
+            services.AddAuthentication(); // <- Because we are using AddIdentityCore<T>() (see above) we are
+                                          //     responsible for adding ALL services.  If we don't then we
+                                          //     will get service validation errors at startup.
         }
 
         
