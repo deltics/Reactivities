@@ -5,42 +5,32 @@ using System.Threading.Tasks;
 using Application.Activities;
 using Domain;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 
 namespace API.Controllers
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class ActivitiesController: ControllerBase
+    public class ActivitiesController: ApiController
     {
-        private IMediator _mediator;
-
-        
-        public ActivitiesController(IMediator mediator)
-        {
-            this._mediator = mediator;
-        }
-
-
         [HttpGet]
         public async Task<ActionResult<List<Activity>>> List(CancellationToken ct)
         {
-            return await _mediator.Send(new List.Query(), ct);
+            return await Mediator.Send(new List.Query(), ct);
         }
         
         
         [HttpGet("{id}")]
         public async Task<ActionResult<Activity>> Details(Guid id)
         {
-            return await _mediator.Send(new Details.Query {Id = id});
+            return await Mediator.Send(new Details.Query {Id = id});
         }
 
 
         [HttpPost]
         public async Task<ActionResult<Unit>> Create(Create.Command command)
         {
-            return await _mediator.Send(command);
+            return await Mediator.Send(command);
         }
 
 
@@ -49,7 +39,7 @@ namespace API.Controllers
         {
             command.Id = id;
             
-            return await _mediator.Send(command);
+            return await Mediator.Send(command);
         }
         
 
@@ -58,7 +48,7 @@ namespace API.Controllers
         {
             var command = new Delete.Command {Id = id};
             
-            return await _mediator.Send(command);
+            return await Mediator.Send(command);
         }
     }
 }

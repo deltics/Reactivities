@@ -1,0 +1,54 @@
+﻿using System;
+using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
+using Identity;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
+using JwtRegisteredClaimNames = Microsoft.IdentityModel.JsonWebTokens.JwtRegisteredClaimNames;
+
+
+namespace Infrastructure.Security
+{
+    public class JwtGenerator : IJwtGenerator
+    {
+        private IConfiguration Configuration { get; }
+
+        
+        public JwtGenerator(IConfiguration configuration)
+        {
+            Configuration = configuration;
+        }
+        
+        
+        public string CreateToken(AppUser user)
+        {
+            // Setup claims
+            var claims = new List<Claim>()
+            {
+                new Claim(JwtRegisteredClaimNames.NameId, user.UserName)
+            };
+            
+            // Generate signing credentials
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["TokenKey"]));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
+
+            // Setup descriptor
+            var tokenDescriptor = new SecurityTokenDescriptor()
+            {
+                Subject = new ClaimsIdentity(claims),
+                Expires = DateTime.UtcNow.AddDays(7),
+                SigningCredentials = creds
+            };
+
+            // Create token from descriptor
+            var handler = new JwtSecurityTokenHandler();
+            var token = handler.CreateToken(tokenDescriptor);
+
+            // FINALLY!  Return the token!
+            return handler.WriteToken(token);
+        }
+    }
+}
