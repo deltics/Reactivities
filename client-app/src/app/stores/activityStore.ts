@@ -1,15 +1,18 @@
-import {action, computed, configure, observable, runInAction} from "mobx";
-import {createContext} from "react";
+import {action, computed, observable, runInAction} from "mobx";
 import {IActivity} from "../models/activity";
 import agent from "../api/agent";
 import {format} from "date-fns";
 import {v4 as uuid} from "uuid";
-
-
-configure({enforceActions: 'always'});
+import {RootStore} from "./rootStore";
 
 
 class ActivityStore {
+    
+    rootStore: RootStore;
+    
+    constructor(rootStore: RootStore) {
+        this.rootStore = rootStore;
+    }
 
     @observable activityRegistry = new Map();
     @observable activities: IActivity[] = [];
@@ -43,7 +46,7 @@ class ActivityStore {
             const activities = await agent.Activities.list();
 
             runInAction('grouping activities', () => {
-                activities.forEach(activity => {
+                activities && activities.forEach(activity => {
                     activity.date = new Date(activity.date);
                     this.activityRegistry.set(activity.id, activity);
                 });
@@ -150,4 +153,4 @@ class ActivityStore {
 }
 
 
-export default createContext(new ActivityStore());
+export default ActivityStore;

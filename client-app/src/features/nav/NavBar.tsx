@@ -1,11 +1,15 @@
-import React from 'react';
-import {Button, Container, Menu} from "semantic-ui-react";
+import React, {useContext, Fragment} from 'react';
+import {Button, Container, Dropdown, Image, Menu} from "semantic-ui-react";
 import {observer} from "mobx-react-lite";
 import {Link, NavLink} from "react-router-dom";
+import {RootStoreContext} from "../../app/stores/rootStore";
 
 
 const NavBar: React.FC = () => {
-    
+
+    const {userStore} = useContext(RootStoreContext);
+    const {isLoggedIn, user} = userStore;
+
     return (
         <Menu fixed='top' inverted>
             <Container>
@@ -13,10 +17,32 @@ const NavBar: React.FC = () => {
                     <img src={"/assets/logo.png"} alt="logo" style={{marginRight: '15px'}}/>
                     Reactivities
                 </Menu.Item>
-                <Menu.Item name='Activities' as={NavLink} to={'/activities'}/>
-                <Menu.Item>
-                    <Button as={Link} to={'/createActivity'} positive content={'Create Activity'} />
-                </Menu.Item>
+                {
+                    user && (
+                        <Fragment>
+                            <Menu.Item name='Activities' as={NavLink} to={'/activities'}/>
+                            <Menu.Item>
+                                <Button as={Link} to={'/createActivity'} positive content={'Create Activity'}/>
+                            </Menu.Item>
+                            <Menu.Item position='right'>
+                                <Image avatar
+                                       spaced='right'
+                                       src={user.image || '/assets/user.png'}/>
+                                <Dropdown pointing='top left'
+                                          text={`${user.displayName}`}>
+                                    <Dropdown.Menu>
+                                        <Dropdown.Item as={Link}
+                                                       to={`/profile/username`}
+                                                       text='My profile'
+                                                       icon='user'/>
+                                        <Dropdown.Item onClick={userStore.logout} text='Logout'
+                                                       icon='power'/>
+                                    </Dropdown.Menu>
+                                </Dropdown>
+                            </Menu.Item>
+                        </Fragment>
+                    )
+                }
             </Container>
         </Menu>
     )

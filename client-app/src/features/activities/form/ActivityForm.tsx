@@ -1,7 +1,6 @@
 import React, {useContext, useEffect, useState} from 'react'
 import {Button, Form, Grid, Segment} from "semantic-ui-react";
 import {ActivityFormValues} from "../../../app/models/activity";
-import ActivityStore from "../../../app/stores/activityStore";
 import {observer} from "mobx-react-lite";
 import {RouteComponentProps} from 'react-router-dom';
 import {Form as FinalForm, Field} from 'react-final-form';
@@ -12,6 +11,7 @@ import {categoryOptions} from "../../../app/common/options/categoryOptions";
 import DateTimeInput from "../../../app/common/form/DateTimeInput";
 import {format} from 'date-fns';
 import {combineValidators, composeValidators, hasLengthGreaterThan, isRequired} from 'revalidate';
+import {RootStoreContext} from "../../../app/stores/rootStore";
 
 interface RouteParams {
     id: string
@@ -37,7 +37,7 @@ const ActivityForm: React.FC<RouteComponentProps<RouteParams>> = (
         history
     }) => {
 
-    const activityStore = useContext(ActivityStore);
+    const {activityStore} = useContext(RootStoreContext);
 
     let [activity, setActivity] = useState(new ActivityFormValues());
 

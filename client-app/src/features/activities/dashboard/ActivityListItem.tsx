@@ -2,9 +2,9 @@ import {observer} from "mobx-react-lite";
 import {Button, Icon, Item, Label, Segment} from "semantic-ui-react";
 import {Link} from "react-router-dom";
 import React, {useContext} from "react";
-import ActivityStore from "../../../app/stores/activityStore";
 import {IActivity} from "../../../app/models/activity";
 import {format} from 'date-fns';
+import {RootStoreContext} from "../../../app/stores/rootStore";
 
 
 interface IProps {
@@ -14,7 +14,7 @@ interface IProps {
 
 const ActivityListItem: React.FC<IProps> = ({activity}) => {
 
-    const activityStore = useContext(ActivityStore);
+    const {activityStore} = useContext(RootStoreContext);
 
     return (
         <Segment.Group>
