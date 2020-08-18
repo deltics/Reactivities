@@ -44,12 +44,28 @@ class UserStore {
             // Only code that modifies the observables in the store needs to "runInAction".
             
             this.rootStore.commonStore.setToken(user.token);
+            this.rootStore.modalStore.closeModal();
             
             history.push('/activities');
            
         } catch (err) {
             console.error(err);
             throw err;
+        }
+    }
+    
+    
+    @action register = async (values: IUserFormValues) => {
+        try {
+            const user = await agent.User.register(values);
+            
+            this.rootStore.commonStore.setToken(user.token);
+            this.rootStore.modalStore.closeModal()
+
+            history.push('/activities');
+        } catch (error) {
+            console.error(error);
+            throw error;
         }
     }
     

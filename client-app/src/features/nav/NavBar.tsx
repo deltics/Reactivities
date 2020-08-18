@@ -8,7 +8,7 @@ import {RootStoreContext} from "../../app/stores/rootStore";
 const NavBar: React.FC = () => {
 
     const {userStore} = useContext(RootStoreContext);
-    const {isLoggedIn, user} = userStore;
+    const {user} = userStore;
 
     return (
         <Menu fixed='top' inverted>

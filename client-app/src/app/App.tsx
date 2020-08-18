@@ -13,6 +13,7 @@ import {ToastContainer} from "react-toastify";
 import {RootStoreContext} from "./stores/rootStore";
 import LoginForm from "../features/login/loginForm";
 import LoadingComponent from "./layout/LoadingComponent";
+import ModalContainer from "./common/modals/ModalContainer";
 
 
 const App: React.FC<RouteComponentProps> = ({location}) => {
@@ -28,7 +29,7 @@ const App: React.FC<RouteComponentProps> = ({location}) => {
         } else {
             commonStore.setAppLoaded();
         }
-    }, [commonStore.token, userStore.getUser, commonStore.setAppLoaded]);
+    }, [commonStore, userStore, commonStore.token, userStore.getUser, commonStore.setAppLoaded]);
 
 
     if (!commonStore.appLoaded)
@@ -36,6 +37,7 @@ const App: React.FC<RouteComponentProps> = ({location}) => {
 
     return (
         <Fragment>
+            <ModalContainer />
             <ToastContainer position='bottom-right'/>
             <Route exact path='/' component={HomePage}/>
             <Route path={'/(.+)'} render={() => (

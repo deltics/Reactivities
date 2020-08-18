@@ -8,21 +8,25 @@ import {FORM_ERROR} from "final-form";
 import {combineValidators, isRequired} from "revalidate";
 import ErrorMessage from "../../app/common/form/ErrorMessage";
 
+// NOTE: The names of these properties MUST exactly match the name properties
+//  of the corresponding <Fields> in the form
 
 const validate = combineValidators({
     email: isRequired('email'),
+    username: isRequired('username'),
+    displayname: isRequired('displayname'),
     password: isRequired('password')
 });
 
 
-const LoginForm = () => {
+const RegisterForm = () => {
 
     const {userStore} = useContext(RootStoreContext);
 
     return (
         <FinalForm validate={validate}
                    onSubmit={(values: IUserFormValues) =>
-                       userStore.login(values).catch(error => ({
+                       userStore.register(values).catch(error => ({
                            [FORM_ERROR]: error
                        }))
                    }
@@ -34,31 +38,37 @@ const LoginForm = () => {
                                 pristine,
                                 dirtySinceLastSubmit
                             }) => (
-                       <Form onSubmit={handleSubmit} 
+                       <Form onSubmit={handleSubmit}
                              error>
                            <Header as='h2'
-                                   content='Login to Reactivities'
+                                   content='Register for Reactivities'
                                    color='teal'
                                    textAlign='center'/>
                            <Field name='email'
                                   placeholder={'Email'}
+                                  component={TextInput}/>
+                           <Field name='username'
+                                  placeholder={'Username'}
+                                  component={TextInput}/>
+                           <Field name='displayname'
+                                  placeholder={'Display Name'}
                                   component={TextInput}/>
                            <Field name='password'
                                   placeholder='Password'
                                   type='password'
                                   component={TextInput}/>
                            {(submitError && !dirtySinceLastSubmit) &&
-                           <ErrorMessage error={submitError} text={'Invalid email or password'}/>
+                           <ErrorMessage error={submitError}/>
                            }
                            <Button color={'teal'}
                                    fluid
                                    disabled={(invalid && !dirtySinceLastSubmit) || pristine}
                                    loading={submitting}
-                                   content='Login'/>
+                                   content='Register'/>
                        </Form>
                    )}/>
     )
 }
 
 
-export default LoginForm;
+export default RegisterForm;
