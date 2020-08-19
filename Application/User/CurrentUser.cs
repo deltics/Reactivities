@@ -3,7 +3,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Application.Exceptions;
-using Identity;
+using Domain;
 using Infrastructure.Security;
 using MediatR;
 using Microsoft.AspNetCore.Identity;

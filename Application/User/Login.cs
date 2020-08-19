@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Application.Exceptions;
 using Domain;
 using FluentValidation;
-using Identity;
 using Infrastructure.Security;
 using MediatR;
 using Microsoft.AspNetCore.Authentication;

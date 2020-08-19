@@ -1,8 +1,9 @@
 using System.Text;
 using Api.Middleware;
 using Application.Activities;
+using AutoMapper;
 using FluentValidation.AspNetCore;
-using Identity;
+using Domain;
 using Infrastructure.Security;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -17,6 +18,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Persistence;
+
 
 namespace Api
 {
@@ -40,7 +42,11 @@ namespace Api
 
             // Persistence services
             services.AddDbContext<DataContext>(options =>
-                options.UseSqlite(Configuration.GetConnectionString("default")));
+            {
+                options.UseLazyLoadingProxies();
+                options.UseSqlite(Configuration.GetConnectionString("default"));
+            });
+            
             services.AddCors(options =>
             {
                 options.AddPolicy("CorsPolicy", policy =>
@@ -52,11 +58,16 @@ namespace Api
                 });
             });
 
+            // We only need to add the ASSEMBLY when setting up MediatR and AutoMapper.  We can use
+            //  any available type in the required assembly and since both MediatR and AutoMapper
+            //  need the Application assembly, we'll get that ref once and re-use it for each service.
+            var applicationAssembly = typeof(List.Handler).Assembly;
+
             // MediatR services.
-            //
-            // We only need to add the ASSEMBLY when setting this up.  We can use any available type in
-            //  the required assembly as MediatR will discover ALL types in that assembly.
-            services.AddMediatR(typeof(List.Handler).Assembly); 
+            services.AddMediatR(applicationAssembly);
+            
+            // AutoMapper
+            services.AddAutoMapper(applicationAssembly);
 
             // Add Mvc with an authorization policy to protect ALL endpoints with an Authorization policy.
             //  This means that any endpoints that should NOT be authorized MUST now be decorated with
@@ -89,6 +100,15 @@ namespace Api
                         ValidateIssuer = false
                     };
                 });
+
+            services.AddAuthorization(opt =>
+            {
+                opt.AddPolicy("IsActivityHost", policy =>
+                {
+                    policy.Requirements.Add(new IsHostRequirement());
+                });
+            });
+            services.AddTransient<IAuthorizationHandler, IsHostRequirementHandler>();
 
             // Infrastructure services
             services.AddScoped<IJwtGenerator, JwtGenerator>();

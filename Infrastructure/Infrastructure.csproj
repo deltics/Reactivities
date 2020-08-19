@@ -5,12 +5,15 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Identity\Identity.csproj" />
+      <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="3.1.7" />
+      <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
+      <PackageReference Include="Microsoft.AspNetCore.Routing" Version="2.2.2" />
+      <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.7.1" />
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
-      <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.7.1" />
+      <ProjectReference Include="..\Domain\Domain.csproj" />
+      <ProjectReference Include="..\Persistence\Persistence.csproj" />
     </ItemGroup>
 
 </Project>

@@ -1,7 +1,9 @@
 using System;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using Application.Exceptions;
 using Domain;
 using FluentValidation;
 using Infrastructure.Security;
@@ -13,31 +15,11 @@ using CurrentUser = Application.User.CurrentUser;
 
 namespace Application.Activities
 {
-    public class Create
+    public class Join
     {
         public class Command : IRequest
         {
             public Guid Id { get; set; }
-            public string Title { get; set; }
-            public string Description { get; set; }
-            public string Category { get; set; }
-            public DateTime Date { get; set; }
-            public string City { get; set; }
-            public string Venue { get; set; }
-        }
-
-
-        public class CommandValidator : AbstractValidator<Command>
-        {
-            public CommandValidator()
-            {
-                RuleFor(cmd => cmd.Title).NotEmpty();
-                RuleFor(cmd => cmd.Description).NotEmpty();
-                RuleFor(cmd => cmd.Category).NotEmpty();
-                RuleFor(cmd => cmd.Date).NotEmpty();
-                RuleFor(cmd => cmd.City).NotEmpty();
-                RuleFor(cmd => cmd.Venue).NotEmpty();
-            }
         }
 
 
@@ -56,26 +38,25 @@ namespace Application.Activities
 
             public async Task<Unit> Handle(Command request, CancellationToken cancellationToken)
             {
-                var activity = new Activity
-                {
-                    Id = request.Id,
-                    Title = request.Title,
-                    Description = request.Description,
-                    Category = request.Category,
-                    Date = request.Date,
-                    City = request.City,
-                    Venue = request.Venue
-                };
-                _context.Activities.Add(activity);
-
                 var user = await _context.Users.SingleOrDefaultAsync(
                     u => u.UserName == _currentUser.Username()
                 );
+
+                var activity = await _context.Activities.FindAsync(request.Id);
+                if (activity == null)
+                    throw new RESTException(HttpStatusCode.NotFound, new {Activity = "Could not find activity"});
+
+                var attendance = await _context.UserActivities.SingleOrDefaultAsync(
+                    x => (x.ActivityId == activity.Id) && (x.AppUserId == user.Id)
+                );
+                if (attendance != null)
+                    throw new RESTException(HttpStatusCode.BadRequest, new {Attendance = "Already attending this activity"});
+                
                 var attendee = new UserActivity
                 {
                     AppUser = user,
                     Activity = activity,
-                    IsHost = true,
+                    IsHost = false,
                     DateJoined = DateTime.UtcNow
                 };
                 _context.UserActivities.Add(attendee);
@@ -83,7 +64,7 @@ namespace Application.Activities
                 var inserted = await _context.SaveChangesAsync(cancellationToken);
 
                 if (inserted == 0)
-                    throw new Exception("Problem saving new Activity");
+                    throw new Exception("Problem joining the activity");
 
                 return Unit.Value;
             }
