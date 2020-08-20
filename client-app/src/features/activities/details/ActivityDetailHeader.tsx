@@ -1,9 +1,10 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import {Segment, Item, Header, Button, Image} from 'semantic-ui-react';
 import {IActivity} from "../../../app/models/activity";
 import {observer} from "mobx-react-lite";
 import {format} from 'date-fns';
 import {Link} from "react-router-dom";
+import {RootStoreContext} from "../../../app/stores/rootStore";
 
 
 const activityImageStyle = {
@@ -20,11 +21,16 @@ const activityImageTextStyle = {
 };
 
 
-const ActivityDetailHeader: React.FC<{activity: IActivity}> = ({activity}) => {
+const ActivityDetailHeader: React.FC<{ activity: IActivity }> = ({activity}) => {
+    
+    const {activityStore} = useContext(RootStoreContext);
+    const {hosting, attending} = activity;
+    const canCancel = attending && !hosting;
+    const canJoin = !hosting && !attending;
 
     return (
         <Segment.Group>
-            <Segment basic attached='top' style={{ padding: '0' }}>
+            <Segment basic attached='top' style={{padding: '0'}}>
                 <Image src={`/assets/categoryImages/${activity.category}.jpg`} fluid style={activityImageStyle}/>
                 <Segment basic style={activityImageTextStyle}>
                     <Item.Group>
@@ -33,7 +39,7 @@ const ActivityDetailHeader: React.FC<{activity: IActivity}> = ({activity}) => {
                                 <Header
                                     size='huge'
                                     content={activity.title}
-                                    style={{ color: 'white' }}
+                                    style={{color: 'white'}}
                                 />
                                 <p>{format(activity.date, 'eeee do MMMM')}</p>
                                 <p>
@@ -45,11 +51,17 @@ const ActivityDetailHeader: React.FC<{activity: IActivity}> = ({activity}) => {
                 </Segment>
             </Segment>
             <Segment clearing attached='bottom'>
-                <Button color='teal'>Join Activity</Button>
-                <Button>Cancel attendance</Button>
-                <Button as={Link} to={`/manage/${activity.id}`} color='orange' floated='right'>
-                    Manage Event
-                </Button>
+                {hosting && (
+                    <Button as={Link} to={`/manage/${activity.id}`} color='orange'>
+                        Manage Event
+                    </Button>
+                )}
+                {canCancel && (
+                    <Button loading={activityStore.submitting} onClick={activityStore.leaveActivity}>Cancel attendance</Button>
+                )}
+                {canJoin && (
+                    <Button loading={activityStore.submitting} onClick={activityStore.joinActivity} color='teal'>Join Activity</Button>
+                )}
             </Segment>
         </Segment.Group>
     );

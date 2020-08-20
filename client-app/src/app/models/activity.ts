@@ -1,3 +1,4 @@
+import {IAttendee} from "./attendee";
 
 
 export interface IActivity {
@@ -8,6 +9,9 @@ export interface IActivity {
     date: Date;
     city: string;
     venue: string;
+    attendees: IAttendee[];
+    attending: boolean;
+    hosting: boolean;
 }
 
 

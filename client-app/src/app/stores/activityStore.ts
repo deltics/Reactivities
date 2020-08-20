@@ -4,12 +4,14 @@ import agent from "../api/agent";
 import {format} from "date-fns";
 import {v4 as uuid} from "uuid";
 import {RootStore} from "./rootStore";
+import {IAttendee} from "../models/attendee";
+import {toast} from "react-toastify";
 
 
 class ActivityStore {
-    
+
     rootStore: RootStore;
-    
+
     constructor(rootStore: RootStore) {
         this.rootStore = rootStore;
     }
@@ -46,8 +48,15 @@ class ActivityStore {
             const activities = await agent.Activities.list();
 
             runInAction('grouping activities', () => {
+                const user = this.rootStore.userStore.user!;
+
                 activities && activities.forEach(activity => {
+                    const attendance = activity.attendees.find(x => x.username === user.username);
+
+                    activity.attending = !!attendance;
+                    activity.hosting = !!attendance && attendance.isHost;
                     activity.date = new Date(activity.date);
+
                     this.activityRegistry.set(activity.id, activity);
                 });
             });
@@ -66,17 +75,24 @@ class ActivityStore {
 
     @action
     loadActivity = async (id: string) => {
-        let activity = this.activityRegistry.get(id);
+        let registeredActivity = this.activityRegistry.get(id);
 
-        if (activity) {
-            this.activity = activity;
-            return activity;
+        if (registeredActivity) {
+            this.activity = registeredActivity;
+            return registeredActivity;
         } else {
             this.loading = true;
             try {
-                activity = await agent.Activities.details(id);
+                const activity = await agent.Activities.details(id);
                 runInAction('after loading specific activity', () => {
-                    activity && (activity.date = new Date(activity.date));
+                    const user = this.rootStore.userStore.user!;
+                    if (activity) {
+                        const attendance = activity.attendees.find(x => x.username === user.username);
+
+                        activity.attending = !!attendance;
+                        activity.hosting = !!attendance && attendance.isHost;
+                        activity.date = new Date(activity.date);
+                    }
                     this.activity = activity;
                     this.activityRegistry.set(activity.id, activity);
                 });
@@ -112,10 +128,29 @@ class ActivityStore {
         this.submitting = true;
         try {
             const isNew = (!activity.id);
-            
+
             if (isNew) {
                 activity.id = uuid();
                 await agent.Activities.create(activity);
+                
+                // Now we need to update the local models to reflect the behaviour of
+                //  the api.  Specifically, add the current user as attending and
+                //  hosting the new activity.
+                //
+                // These changes do not affect any observable state so we don't need 
+                //  to runInAction().
+                
+                const user = this.rootStore.userStore.user!;
+
+                const attendee: IAttendee = {
+                    displayName: user.displayName,
+                    username: user.username,
+                    image: user.image,
+                    isHost: true
+                }
+                activity.hosting = true;
+                activity.attendees.push(attendee);
+
             } else {
                 await agent.Activities.update(activity);
             }
@@ -149,6 +184,63 @@ class ActivityStore {
             this.targetId = '';
             this.submitting = false;
         });
+    }
+
+
+    @action joinActivity = async () => {
+        this.submitting = true;
+        try {
+            const activity = this.activity!;
+
+            await agent.Activities.join(activity.id);
+
+            runInAction('after joining activity', () => {
+                const user = this.rootStore.userStore.user!;
+
+                const attendee: IAttendee = {
+                    displayName: user.displayName,
+                    username: user.username,
+                    image: user.image,
+                    isHost: false
+                }
+
+                activity.attendees.push(attendee);
+                activity.attending = true;
+
+                this.activityRegistry.set(activity.id, activity);
+            });
+        } catch (error) {
+            console.error(error);
+            toast.error('Problem joining the activity');
+        }
+        runInAction('cleanup after joining an activity', () => {
+            this.submitting = false;
+        });
+    }
+
+
+    @action leaveActivity = async () => {
+        this.submitting = true;
+        try {
+            const activity = this.activity!;
+
+            await agent.Activities.leave(activity.id);
+
+            runInAction('after leaving activity', () => {
+                const user = this.rootStore.userStore.user!;
+
+                activity.attendees = activity.attendees.filter(a => a.username !== user.username);
+                activity.attending = false;
+
+                this.activityRegistry.set(activity.id, activity);
+            })
+        } catch (error) {
+            console.error(error);
+            toast.error('Problem leaving the activity');
+        }
+        runInAction('cleanup after leaving an activity', () => {
+            this.submitting = false;
+        })
     }
 }
 

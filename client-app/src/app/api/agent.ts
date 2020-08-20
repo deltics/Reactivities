@@ -62,10 +62,12 @@ const requests = {
 // These functions use the requests axios wrapper methods to call Activity related endpoints
 const Activities = {
     list: (): Promise<IActivity[]> => requests.get('activities'),
-    details: (id: string) => requests.get(`activities/${id}`),
+    details: (id: string): Promise<IActivity> => requests.get(`activities/${id}`),
     create: (activity: IActivity) => requests.post('activities', activity),
     update: (activity: IActivity) => requests.put(`activities/${activity.id}`, activity),
-    delete: (id: string) => requests.delete(`activities/${id}`)
+    delete: (id: string) => requests.delete(`activities/${id}`),
+    join: (id: string) => requests.post(`activities/${id}/attend`, {}),
+    leave: (id: string) => requests.delete(`activities/${id}/attend`)
 }
 
 // These functions use the requests axios wrapper methods to call User related endpoints
