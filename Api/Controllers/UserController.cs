@@ -10,7 +10,7 @@ namespace API.Controllers
     {
         [HttpPost("login")]
         [AllowAnonymous]
-        public async Task<ActionResult<User>> Login(Login.Query query)
+        public async Task<ActionResult<UserDto>> Login(Login.Query query)
         {
             return await Mediator.Send(query);
         }
@@ -18,14 +18,14 @@ namespace API.Controllers
         
         [HttpPost("register")]
         [AllowAnonymous]
-        public async Task<ActionResult<User>> Register(Register.Command command)
+        public async Task<ActionResult<UserDto>> Register(Register.Command command)
         {
             return await Mediator.Send(command);
         }
 
         
         [HttpGet]
-        public async Task<ActionResult<User>> GetCurrentUser()
+        public async Task<ActionResult<UserDto>> GetCurrentUser()
         {
             return await Mediator.Send(new CurrentUser.Query());
         }

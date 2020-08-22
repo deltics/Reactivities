@@ -6,7 +6,6 @@ using Application.Exceptions;
 using AutoMapper;
 using Domain;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 using Persistence;
 
 
@@ -41,7 +40,6 @@ namespace Application.Activities
                     throw new RESTException(HttpStatusCode.NotFound, new {activity = "Not found"});
 
                 var result = _mapper.Map<Activity, ActivityDto>(activity);
-                
                 return result;
             }
         }

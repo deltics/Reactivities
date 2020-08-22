@@ -1,6 +1,7 @@
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
+using Application.Interfaces;
 
 
 namespace Infrastructure.Security

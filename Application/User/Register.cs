@@ -4,9 +4,9 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Application.Exceptions;
+using Application.Interfaces;
 using Domain;
 using FluentValidation;
-using Infrastructure.Security;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -18,7 +18,7 @@ namespace Application.User
 {
     public class Register
     {
-        public class Command : IRequest<User>
+        public class Command : IRequest<UserDto>
         {
             public string DisplayName { get; set; }
             public string Username { get; set; }
@@ -39,7 +39,7 @@ namespace Application.User
         }
 
 
-        public class Handler : IRequestHandler<Command, User>
+        public class Handler : IRequestHandler<Command, UserDto>
         {
             private DataContext _context;
             private readonly UserManager<AppUser> _userManager;
@@ -54,7 +54,7 @@ namespace Application.User
             }
 
 
-            public async Task<User> Handle(Command request, CancellationToken cancellationToken)
+            public async Task<UserDto> Handle(Command request, CancellationToken cancellationToken)
             {
                 if (await _context.Users.AnyAsync(u => u.Email == request.Email, cancellationToken))
                     throw new RESTException(HttpStatusCode.BadRequest,
@@ -101,7 +101,7 @@ namespace Application.User
                         throw new Exception("Unexpected error.  Unable to register user");
                 }
 
-                return new User
+                return new UserDto
                 {
                     DisplayName = user.DisplayName,
                     Username = user.UserName,

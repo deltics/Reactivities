@@ -1,16 +1,13 @@
 using System;
-using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Application.Exceptions;
+using Application.Interfaces;
 using Domain;
-using FluentValidation;
-using Infrastructure.Security;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
-using CurrentUser = Application.User.CurrentUser;
 
 
 namespace Application.Activities

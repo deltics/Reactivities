@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 
 namespace Domain
@@ -14,6 +15,7 @@ namespace Domain
         public string City { get; set; }
         public string Venue { get; set; }
         
+        [JsonPropertyName("attendees")]
         public virtual ICollection<UserActivity> UserActivities { get; set; }
     }
 }
