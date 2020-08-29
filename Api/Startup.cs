@@ -1,5 +1,7 @@
 using System.Text;
+using System.Threading.Tasks;
 using Api.Middleware;
+using Api.SignalR;
 using Application.Activities;
 using Application.Interfaces;
 using AutoMapper;
@@ -56,6 +58,7 @@ namespace Api
                     policy
                         .AllowAnyHeader()
                         .AllowAnyMethod()
+                        .AllowCredentials() // This is needed for SignalR
                         .WithOrigins("http://localhost:3000").Build();
                 });
             });
@@ -70,6 +73,10 @@ namespace Api
             
             // AutoMapper
             services.AddAutoMapper(applicationAssembly);
+
+            // SignalR
+            services.AddSignalR();
+            
 
             // Add Mvc with an authorization policy to protect ALL endpoints with an Authorization policy.
             //  This means that any endpoints that should NOT be authorized MUST now be decorated with
@@ -100,6 +107,24 @@ namespace Api
                         IssuerSigningKey = key,
                         ValidateAudience = false,
                         ValidateIssuer = false
+                    };
+                    
+                    // Now we plug into the authentication events so that when we are presented with
+                    //  an access_token with a request to the /comments endpoint, we extract that
+                    //  token and apply it to the message context 
+                    opt.Events = new JwtBearerEvents
+                    {
+                        OnMessageReceived = context =>
+                        {
+                            var accessToken = context.Request.Query["access_token"];
+                            var path = context.HttpContext.Request.Path;
+                            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/comments"))
+                            {
+                                context.Token = accessToken;
+                            }
+
+                            return Task.CompletedTask;
+                        }
                     };
                 });
 
@@ -141,7 +166,11 @@ namespace Api
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();                        // REST Api routing
+                endpoints.MapHub<CommentHub>("comments");    // SignalR routing
+            });
         }
     }
 }

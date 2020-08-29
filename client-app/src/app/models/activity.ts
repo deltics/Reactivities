@@ -1,4 +1,5 @@
 import {IAttendee} from "./attendee";
+import {IComment} from "./comment";
 
 
 export interface IActivity {
@@ -12,6 +13,7 @@ export interface IActivity {
     attendees: IAttendee[];
     attending: boolean;
     hosting: boolean;
+    comments: IComment[];
 }
 
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Application.Activities;
+using Application.Comments;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -27,7 +28,7 @@ namespace API.Controllers
 
 
         [HttpPost]
-        public async Task<ActionResult<Unit>> Create(Create.Command command)
+        public async Task<ActionResult<Unit>> Create(Application.Activities.Create.Command command)
         {
             return await Mediator.Send(command);
         }
@@ -37,6 +38,18 @@ namespace API.Controllers
         public async Task<ActionResult<Unit>> Join(Guid id)
         {
             return await Mediator.Send(new Join.Command { Id = id });
+        }
+
+
+        [HttpPost("{id}/comments")]
+        public async Task<ActionResult<CommentDto>> Post(Guid id, [FromBody] string body)
+        {
+            var command = new Application.Comments.Create.Command
+            {
+                ActivityId = id,
+                Body = body
+            }; 
+            return await Mediator.Send(command);
         }
 
 

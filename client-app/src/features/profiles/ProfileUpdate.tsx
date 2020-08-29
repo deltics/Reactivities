@@ -1,7 +1,6 @@
-import React, {useContext, Fragment, useState} from 'react'
-import {Button, Form, Segment} from "semantic-ui-react";
+import React, {useContext} from 'react'
+import {Button, Form} from "semantic-ui-react";
 import {observer} from "mobx-react-lite";
-import LoadingComponent from "../../app/layout/LoadingComponent";
 import {RootStoreContext} from "../../app/stores/rootStore";
 import {Field, Form as FinalForm} from "react-final-form";
 import TextInput from "../../app/common/form/TextInput";

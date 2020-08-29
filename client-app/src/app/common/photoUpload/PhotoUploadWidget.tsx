@@ -1,5 +1,5 @@
-import React, {Fragment, useContext, useEffect, useRef, useState} from 'react';
-import {Header, Image, Grid, Segment, SegmentGroup, Item, Button} from 'semantic-ui-react';
+import React, {Fragment, useContext, useEffect} from 'react';
+import {Header, Grid, Button} from 'semantic-ui-react';
 import {observer} from 'mobx-react-lite';
 import PhotoUploadDropzone from "./PhotoUploadDropzone";
 import PhotoUploadCropper from "./PhotoUploadCropper";

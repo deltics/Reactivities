@@ -46,7 +46,7 @@ class ProfileStore {
         try {
             await agent.Photos.delete(photo.id);
             runInAction(() => {
-                this.profile!.photos = this.profile!.photos.filter(p => p.id != photo.id); 
+                this.profile!.photos = this.profile!.photos.filter(p => p.id !== photo.id); 
             })
         } catch (error) {
             console.error(error);

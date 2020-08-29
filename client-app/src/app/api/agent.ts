@@ -22,9 +22,12 @@ axios.interceptors.request.use((config) => {
 
 axios.interceptors.response.use(undefined, error => {
 
-    if ((error.message === 'Network Error') && (!error.response)) {
+    if ((error.message === 'Network Error') && (!error.response))
         toast.error('Network error.  Check that the server is available.');
-    }
+    
+    if (!error || !error.response.hasOwnProperty('status'))
+        throw error.response;
+    
     const {status, data, config} = error.response;
 
     // '/notfound' doesn't actually identify the NotFound component - it is simply an

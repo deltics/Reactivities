@@ -8,6 +8,7 @@ import {IAttendee} from "../models/attendee";
 import {toast} from "react-toastify";
 import {IUser} from "../models/user";
 import {IPhoto} from "../models/profile";
+import {HubConnection, HubConnectionBuilder, LogLevel} from "@microsoft/signalr";
 
 
 class ActivityStore {
@@ -24,6 +25,7 @@ class ActivityStore {
     @observable editing = false;
     @observable submitting = false;
     @observable targetId = '';
+    @observable.ref commentHub: HubConnection | null = null;
 
 
     @computed get activitiesByDate() {
@@ -38,6 +40,52 @@ class ActivityStore {
             activities[date] = activities[date] ? [...activities[date], activity] : [activity];
             return activities;
         }, {} as { [key: string]: IActivity[] }));
+    }
+
+
+    @action connectCommentHub = (activityId: string) => {
+        // Connects to /comments endpoint passing access_token as a query string parameter
+        this.commentHub = new HubConnectionBuilder()
+            .withUrl('http://localhost:5000/comments', {accessTokenFactory: () => this.rootStore.commonStore.token!})
+            .configureLogging(LogLevel.Information)
+            .build();
+
+        // Establishes the client side methods that the server-side Hub can Send messages to
+        this.commentHub.on('NewComment', comment => {
+            runInAction(() => this.activity!.comments.push(comment));
+        })
+        this.commentHub.on('Info', info => {
+            console.log(info);
+        });
+        
+        // Now start the connection
+        this.commentHub.start()
+            .then(() => {
+                if (this.commentHub!.state === 'Connected')
+                    this.commentHub!.invoke("Join", activityId);
+            }).catch(error => console.error(error));
+    }
+
+
+    @action
+    disconnectCommentHub = () => {
+        if (this.commentHub!.state !== 'Connected')
+            return;
+        
+        this.commentHub!.invoke("Leave", this.activity!.id)
+            .then(() => this.commentHub!.stop())
+            .catch(e => console.error(e));
+    }
+
+
+    @action
+    addComment = async (values: any) => {
+        values.activityId = this.activity!.id;
+        try {
+            await this.commentHub?.invoke('SendComment', values);
+        } catch (error) {
+            console.error(error);
+        }
     }
 
 
@@ -133,14 +181,14 @@ class ActivityStore {
             if (isNew) {
                 activity.id = uuid();
                 await agent.Activities.create(activity);
-                
+
                 // Now we need to update the local models to reflect the behaviour of
                 //  the api.  Specifically, add the current user as attending and
                 //  hosting the new activity.
                 //
                 // These changes do not affect any observable state so we don't need 
                 //  to runInAction().
-                
+
                 const user = this.rootStore.userStore.user!;
 
                 const attendee: IAttendee = {
@@ -151,6 +199,7 @@ class ActivityStore {
                 }
                 activity.hosting = true;
                 activity.attendees.push(attendee);
+                activity.comments = [];
 
             } else {
                 await agent.Activities.update(activity);
@@ -188,7 +237,8 @@ class ActivityStore {
     }
 
 
-    @action joinActivity = async () => {
+    @action
+    joinActivity = async () => {
         this.submitting = true;
         try {
             const activity = this.activity!;
@@ -220,7 +270,8 @@ class ActivityStore {
     }
 
 
-    @action leaveActivity = async () => {
+    @action
+    leaveActivity = async () => {
         this.submitting = true;
         try {
             const activity = this.activity!;
@@ -243,19 +294,21 @@ class ActivityStore {
             this.submitting = false;
         })
     }
-    
-    
-    @action updateHostPhotos = (user: IUser, photo: IPhoto) => {
-         this.activityRegistry.forEach(a => {
-             a.attendees.forEach(aa => {
-                 if (aa.username === user.username)
-                     aa.image = photo.url;
-             });
-         });
+
+
+    @action
+    updateHostPhotos = (user: IUser, photo: IPhoto) => {
+        this.activityRegistry.forEach(a => {
+            a.attendees.forEach(aa => {
+                if (aa.username === user.username)
+                    aa.image = photo.url;
+            });
+        });
     }
-    
-    
-    @action updateDisplayName = (user: IUser) => {
+
+
+    @action
+    updateDisplayName = (user: IUser) => {
         this.activityRegistry.forEach(a => {
             a.attendees.forEach(aa => {
                 if (aa.username === user.username)

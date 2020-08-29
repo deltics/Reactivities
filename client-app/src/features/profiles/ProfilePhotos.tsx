@@ -3,7 +3,6 @@ import {observer} from "mobx-react-lite";
 import {Tab, Card, Header, Image, Button, Grid} from "semantic-ui-react";
 import {RootStoreContext} from "../../app/stores/rootStore";
 import PhotoUploadWidget from "../../app/common/photoUpload/PhotoUploadWidget";
-import agent from "../../app/api/agent";
 
 
 const ProfilePhotos = () => {
