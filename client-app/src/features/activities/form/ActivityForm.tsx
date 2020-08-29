@@ -54,14 +54,14 @@ const ActivityForm: React.FC<RouteComponentProps<RouteParams>> = (
     const onSubmitFinalForm = (values: any) => {
         // First, take the values for date and time that we separated for the
         //  form UX and recombine into the date property of the Activity...
-        
+
         let {date, time, ...activity} = values;
 
         date = format(date, 'yyyy-MM-dd');
         time = format(time, 'HH:mm:00');
 
         activity.date = new Date(date + ' ' + time);
-        
+
         // Now we can save it (the store will figure out whether it is a new
         //  activity to be created or an update of an existing one)
 

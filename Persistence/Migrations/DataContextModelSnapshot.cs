@@ -115,6 +115,33 @@ namespace Persistence.Migrations
                     b.ToTable("AspNetUsers");
                 });
 
+            modelBuilder.Entity("Domain.Comment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("ActivityId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("AuthorId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Body")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ActivityId");
+
+                    b.HasIndex("AuthorId");
+
+                    b.ToTable("Comments");
+                });
+
             modelBuilder.Entity("Domain.Photo", b =>
                 {
                     b.Property<string>("Id")
@@ -155,37 +182,6 @@ namespace Persistence.Migrations
                     b.HasIndex("ActivityId");
 
                     b.ToTable("UserActivities");
-                });
-
-            modelBuilder.Entity("Domain.Value", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Values");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Name = "Value 101"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Name = "Value 102"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Name = "Value 103"
-                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -314,6 +310,17 @@ namespace Persistence.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens");
+                });
+
+            modelBuilder.Entity("Domain.Comment", b =>
+                {
+                    b.HasOne("Domain.Activity", "Activity")
+                        .WithMany("Comments")
+                        .HasForeignKey("ActivityId");
+
+                    b.HasOne("Domain.AppUser", "Author")
+                        .WithMany()
+                        .HasForeignKey("AuthorId");
                 });
 
             modelBuilder.Entity("Domain.Photo", b =>

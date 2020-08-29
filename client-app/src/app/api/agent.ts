@@ -3,6 +3,7 @@ import {IActivity} from "../models/activity";
 import {history} from '../..';
 import {toast} from 'react-toastify';
 import {IUser, IUserFormValues} from "../models/user";
+import {IPhoto, IProfile} from "../models/profile";
 
 
 axios.defaults.baseURL = 'http://localhost:5000/api/';
@@ -56,7 +57,15 @@ const requests = {
     get: (url: string) => axios.get(url).then(sleep(1000)).then(responseBody),
     post: (url: string, body: {}) => axios.post(url, body).then(sleep(1000)).then(responseBody),
     put: (url: string, body: {}) => axios.put(url, body).then(sleep(1000)).then(responseBody),
-    delete: (url: string) => axios.delete(url).then(sleep(1000)).then(responseBody)
+    delete: (url: string) => axios.delete(url).then(sleep(1000)).then(responseBody),
+    postFileFormData: (url: string, file: Blob) => {
+        let formData = new FormData();
+        formData.append('File', file);
+        
+        return axios.post(url, formData, {
+            headers: {'Content-Type': 'multipart/form-data'}
+        }).then(responseBody);
+    },
 };
 
 // These functions use the requests axios wrapper methods to call Activity related endpoints
@@ -77,9 +86,23 @@ const User = {
     register: (user: IUserFormValues): Promise<IUser> => requests.post('/user/register', user),
 }
 
+// These functions use the requests axios wrapper methods to call User related endpoints
+const Profiles = {
+    get: (username: string): Promise<IProfile> => requests.get(`/profiles/${username}`),
+    put: (profile: Partial<IProfile>) => requests.put(`profiles`, profile)
+}
+
+const Photos = {
+    delete: (id: string) => requests.delete(`photos/${id}`),
+    setMain: (id: string) => requests.post(`photos/${id}/setmain`, {}),
+    upload: (photo: Blob): Promise<IPhoto> => requests.postFileFormData(`/photos`, photo)
+}
+
 // Most of everything above is internal to this module.  Only the Activities and User
 //  objects (methods) are exported
 export default {
     Activities,
+    Photos,
+    Profiles,
     User
 }

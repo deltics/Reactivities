@@ -11,9 +11,9 @@ import NotFound from "./layout/NotFound";
 import {Switch} from 'react-router-dom';
 import {ToastContainer} from "react-toastify";
 import {RootStoreContext} from "./stores/rootStore";
-import LoginForm from "../features/login/loginForm";
 import LoadingComponent from "./layout/LoadingComponent";
 import ModalContainer from "./common/modals/ModalContainer";
+import ProfilePage from "../features/profiles/ProfilePage";
 
 
 const App: React.FC<RouteComponentProps> = ({location}) => {
@@ -47,9 +47,9 @@ const App: React.FC<RouteComponentProps> = ({location}) => {
                         <Switch>
                             <Route exact path='/activities' component={ActivityDashboard}/>
                             <Route path='/activities/:id' component={ActivityDetail}/>
+                            <Route path='/profiles/:username' component={ProfilePage}/>
                             <Route key={location.key} path={['/createActivity', '/manage/:id']}
                                    component={ActivityForm}/>
-                            <Route path='/login' component={LoginForm}/>
                             <Route component={NotFound}/>
                         </Switch>
                     </Container>

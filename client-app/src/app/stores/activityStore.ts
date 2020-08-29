@@ -6,6 +6,8 @@ import {v4 as uuid} from "uuid";
 import {RootStore} from "./rootStore";
 import {IAttendee} from "../models/attendee";
 import {toast} from "react-toastify";
+import {IUser} from "../models/user";
+import {IPhoto} from "../models/profile";
 
 
 class ActivityStore {
@@ -16,8 +18,7 @@ class ActivityStore {
         this.rootStore = rootStore;
     }
 
-    @observable activityRegistry = new Map();
-    @observable activities: IActivity[] = [];
+    @observable activityRegistry = new Map<string, IActivity>();
     @observable activity: IActivity | null = null;
     @observable loading = false;
     @observable editing = false;
@@ -51,7 +52,7 @@ class ActivityStore {
                 const user = this.rootStore.userStore.user!;
 
                 activities && activities.forEach(activity => {
-                    const attendance = activity.attendees.find(x => x.username === user.username);
+                    const attendance = activity.attendees.find(x => x.username === user?.username);
 
                     activity.attending = !!attendance;
                     activity.hosting = !!attendance && attendance.isHost;
@@ -119,7 +120,7 @@ class ActivityStore {
     @action
     selectActivity = (id: string | null, editing: boolean) => {
         this.editing = editing;
-        this.activity = this.activityRegistry.get(id);
+        this.activity = id ? this.activityRegistry.get(id)! : null;
     }
 
 
@@ -241,6 +242,26 @@ class ActivityStore {
         runInAction('cleanup after leaving an activity', () => {
             this.submitting = false;
         })
+    }
+    
+    
+    @action updateHostPhotos = (user: IUser, photo: IPhoto) => {
+         this.activityRegistry.forEach(a => {
+             a.attendees.forEach(aa => {
+                 if (aa.username === user.username)
+                     aa.image = photo.url;
+             });
+         });
+    }
+    
+    
+    @action updateDisplayName = (user: IUser) => {
+        this.activityRegistry.forEach(a => {
+            a.attendees.forEach(aa => {
+                if (aa.username === user.username)
+                    aa.displayName = user.displayName;
+            });
+        });
     }
 }
 
