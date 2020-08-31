@@ -15,10 +15,14 @@ namespace Application.Mapping
             CreateMap<UserActivity, Attendee>()
                 .ForMember(dest => dest.Username, o => o.MapFrom(src => src.AppUser.UserName))
                 .ForMember(dest => dest.DisplayName, o => o.MapFrom(src => src.AppUser.DisplayName))
-                .ForMember(dest => dest.Image, o => o.MapFrom(src => src.AppUser.Photos.SingleOrDefault(x => x.IsMain).Url));
+                .ForMember(dest => dest.Image, o => o.MapFrom(src => src.AppUser.Photos.SingleOrDefault(x => x.IsMain).Url))
+                .ForMember(dest => dest.Following, o => o.MapFrom<FollowingAttendeeResolver>());
 
             CreateMap<AppUser, Profile>()
-                .ForMember(dest => dest.Image, o => o.MapFrom(src => src.Photos.SingleOrDefault(x => x.IsMain).Url));
+                .ForMember(dest => dest.Image, o => o.MapFrom(src => src.Photos.SingleOrDefault(x => x.IsMain).Url))
+                .ForMember(dest => dest.FollowerCount, o => o.MapFrom(src => src.Followers.Count))
+                .ForMember(dest => dest.FollowingCount, o => o.MapFrom(src => src.Following.Count))
+                .ForMember(dest => dest.Following, o => o.MapFrom<FollowingProfileResolver>());
 
             CreateMap<AppUser, UserDto>()
                 .ForMember(dest => dest.Username, o => o.MapFrom(src => src.UserName))

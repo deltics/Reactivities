@@ -92,7 +92,10 @@ const User = {
 // These functions use the requests axios wrapper methods to call User related endpoints
 const Profiles = {
     get: (username: string): Promise<IProfile> => requests.get(`/profiles/${username}`),
-    put: (profile: Partial<IProfile>) => requests.put(`profiles`, profile)
+    put: (profile: Partial<IProfile>) => requests.put(`profiles`, profile),
+    follow: (username: string) => requests.post(`profiles/${username}/follow`, {}),
+    unfollow: (username: string) => requests.delete(`profiles/${username}/follow`),
+    getFollowings: (username: string, predicate: string): Promise<IProfile[]> => requests.get(`/profiles/${username}/follow?predicate=${predicate}`)
 }
 
 const Photos = {

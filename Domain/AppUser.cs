@@ -12,5 +12,7 @@ namespace Domain
 
         public virtual ICollection<UserActivity> UserActivities { get; set; }
         public virtual ICollection<Photo> Photos { get; set; }
+        public virtual ICollection<Following> Following { get; set; }
+        public virtual ICollection<Following> Followers { get; set; }
     }
 }

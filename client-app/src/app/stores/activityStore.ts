@@ -57,7 +57,7 @@ class ActivityStore {
         this.commentHub.on('Info', info => {
             console.log(info);
         });
-        
+
         // Now start the connection
         this.commentHub.start()
             .then(() => {
@@ -71,7 +71,7 @@ class ActivityStore {
     disconnectCommentHub = () => {
         if (this.commentHub!.state !== 'Connected')
             return;
-        
+
         this.commentHub!.invoke("Leave", this.activity!.id)
             .then(() => this.commentHub!.stop())
             .catch(e => console.error(e));
@@ -195,7 +195,8 @@ class ActivityStore {
                     displayName: user.displayName,
                     username: user.username,
                     image: user.image,
-                    isHost: true
+                    isHost: true,
+                    following: false        // Can't follow yourself
                 }
                 activity.hosting = true;
                 activity.attendees.push(attendee);
@@ -252,7 +253,8 @@ class ActivityStore {
                     displayName: user.displayName,
                     username: user.username,
                     image: user.image,
-                    isHost: false
+                    isHost: false,
+                    following: false    // Can't follow yourself!
                 }
 
                 activity.attendees.push(attendee);

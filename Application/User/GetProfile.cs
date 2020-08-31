@@ -2,6 +2,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Application.Exceptions;
+using Application.Interfaces;
 using AutoMapper;
 using Domain;
 using MediatR;
@@ -23,12 +24,14 @@ namespace Application.User
         {
             private readonly DataContext _context;
             private readonly IMapper _mapper;
+            private readonly IProfileReader _reader;
 
 
-            public Handler(DataContext context, IMapper mapper)
+            public Handler(DataContext context, IMapper mapper, IProfileReader reader)
             {
                 _context = context;
                 _mapper = mapper;
+                _reader = reader;
             }
 
             
@@ -39,7 +42,7 @@ namespace Application.User
                 if (user == null)
                     throw new RESTException(HttpStatusCode.NotFound, new {user = "Not found"});
 
-                return _mapper.Map<AppUser, Profile>(user);
+                return await _reader.ReadProfile(request.Username);
             }
         }
     }

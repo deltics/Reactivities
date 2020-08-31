@@ -8,6 +8,7 @@ using AutoMapper;
 using FluentValidation.AspNetCore;
 using Domain;
 using Infrastructure.PhotoStorage;
+using Infrastructure.Readers;
 using Infrastructure.Security;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -140,6 +141,7 @@ namespace Api
             // Infrastructure services
             services.AddScoped<IJwtGenerator, JwtGenerator>();
             services.AddScoped<ICurrentUser, CurrentUser>();
+            services.AddScoped<IProfileReader, ProfileReader>();
             services.AddScoped<IPhotoStorage, CloudinaryPhotoStorage>();
             
             // Cloudinary configuration (for PhotoStorage)
