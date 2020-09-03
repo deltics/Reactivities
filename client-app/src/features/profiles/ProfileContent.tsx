@@ -5,12 +5,13 @@ import ProfilePhotos from "./ProfilePhotos";
 import ProfileDetail from "./ProfileDetail";
 import ProfileFollowings from "./ProfileFollowings";
 import {RootStoreContext} from "../../app/stores/rootStore";
+import ProfileActivities from "./ProfileActivities";
 
 
 const panes = [
     {menuItem: 'About', render: () => <ProfileDetail/>},
     {menuItem: 'Photos', render: () => <ProfilePhotos/>},
-    {menuItem: 'Activities', render: () => <Tab.Pane>Activities content</Tab.Pane>},
+    {menuItem: 'Activities', render: () => <ProfileActivities />},
     {menuItem: 'Followers', render: () => <ProfileFollowings />},
     {menuItem: 'Following', render: () => <ProfileFollowings />}
 ];

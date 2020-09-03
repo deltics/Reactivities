@@ -1,4 +1,4 @@
-import {action, computed, observable, runInAction} from "mobx";
+import {action, computed, observable, reaction, runInAction} from "mobx";
 import {IActivity} from "../models/activity";
 import agent from "../api/agent";
 import {format} from "date-fns";
@@ -11,12 +11,22 @@ import {IPhoto} from "../models/profile";
 import {HubConnection, HubConnectionBuilder, LogLevel} from "@microsoft/signalr";
 
 
+const PAGE_LIMIT = 3;
+
+
 class ActivityStore {
 
     rootStore: RootStore;
 
     constructor(rootStore: RootStore) {
         this.rootStore = rootStore;
+
+        reaction(() => this.filter.keys(),
+            () => {
+                this.page = 0;
+                this.activityRegistry.clear();
+                this.loadActivities()
+            });
     }
 
     @observable activityRegistry = new Map<string, IActivity>();
@@ -26,6 +36,23 @@ class ActivityStore {
     @observable submitting = false;
     @observable targetId = '';
     @observable.ref commentHub: HubConnection | null = null;
+    @observable activityCount = 0;
+    @observable page = 0;
+    @observable filter = new Map();
+
+
+    @action setFilter = (filter?: string, value?: boolean | Date) => {
+        this.filter.clear();
+
+        if (filter) {
+            this.filter.set(filter, filter === 'startDate' ? (value as Date).toISOString() : (value as boolean).toString());
+        }
+    }
+
+
+    @computed get totalPages() {
+        return Math.ceil(this.activityCount / PAGE_LIMIT);
+    }
 
 
     @computed get activitiesByDate() {
@@ -94,12 +121,12 @@ class ActivityStore {
         this.loading = true;
 
         try {
-            const activities = await agent.Activities.list();
+            const envelope = await agent.Activities.list(PAGE_LIMIT, this.page, this.filter);
 
             runInAction('grouping activities', () => {
                 const user = this.rootStore.userStore.user!;
 
-                activities && activities.forEach(activity => {
+                envelope && envelope.activities.forEach(activity => {
                     const attendance = activity.attendees.find(x => x.username === user?.username);
 
                     activity.attending = !!attendance;
@@ -108,6 +135,7 @@ class ActivityStore {
 
                     this.activityRegistry.set(activity.id, activity);
                 });
+                this.activityCount = envelope.activityCount;
             });
         } catch (err) {
             runInAction('error loading activities', () => {
@@ -317,6 +345,11 @@ class ActivityStore {
                     aa.displayName = user.displayName;
             });
         });
+    }
+
+
+    @action setPage = (page: number) => {
+        this.page = page;
     }
 }
 

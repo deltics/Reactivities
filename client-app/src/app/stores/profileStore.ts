@@ -3,6 +3,7 @@ import {action, computed, observable, reaction, runInAction} from "mobx";
 import agent from "../api/agent";
 import {IPhoto, IProfile} from "../models/profile";
 import {toast} from "react-toastify";
+import {IUserActivity} from "../models/useractivity";
 
 
 class ProfileStore {
@@ -19,15 +20,25 @@ class ProfileStore {
                 this.loadFollowings();
             }
         );
+        reaction(
+            () => this.activitiesPredicate,
+            predicate => {
+                console.log(predicate);
+                this.loadActivities();
+            }
+        );
     }
 
 
     @observable profile: IProfile | null = null;
     @observable loading: boolean = false;
+    @observable loadingActivities: boolean = false;
     @observable loadingProfiles: boolean = false;
     @observable submitting: boolean = false;
     @observable followings: IProfile[] = [];
     @observable followingsPredicate: string = '';
+    @observable activities: IUserActivity[] = [];
+    @observable activitiesPredicate: string = '';
 
 
     @computed get isCurrentUser() {
@@ -139,6 +150,21 @@ class ProfileStore {
     }
 
 
+    @action loadActivities = async () => {
+        this.loadingActivities = true;
+        try {
+            const activities = (this.activitiesPredicate === 'past' || this.activitiesPredicate === 'hosting' || this.activitiesPredicate === 'future')
+                ? await agent.Profiles.getActivities(this.profile!.username, this.activitiesPredicate)
+                : [];
+            runInAction(() => this.activities = activities);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            runInAction(() => this.loadingActivities = false);
+        }
+    }
+
+
     @action loadFollowings = async () => {
         this.loadingProfiles = true;
         try {
@@ -151,6 +177,11 @@ class ProfileStore {
         } finally {
             runInAction(() => this.loadingProfiles = false);
         }
+    }
+
+
+    @action setActivitiesPredicate = async (predicate: string) => {
+        this.activitiesPredicate = predicate;
     }
 
 

@@ -18,6 +18,12 @@ namespace Application.Mapping
                 .ForMember(dest => dest.Image, o => o.MapFrom(src => src.AppUser.Photos.SingleOrDefault(x => x.IsMain).Url))
                 .ForMember(dest => dest.Following, o => o.MapFrom<FollowingAttendeeResolver>());
 
+            CreateMap<UserActivity, UserActivityDto>()
+                .ForMember(dest => dest.Id, o => o.MapFrom(src => src.ActivityId))
+                .ForMember(dest => dest.Title, o => o.MapFrom(src => src.Activity.Title))
+                .ForMember(dest => dest.Category, o => o.MapFrom(src => src.Activity.Category))
+                .ForMember(dest => dest.Date, o => o.MapFrom(src => src.Activity.Date));
+            
             CreateMap<AppUser, Profile>()
                 .ForMember(dest => dest.Image, o => o.MapFrom(src => src.Photos.SingleOrDefault(x => x.IsMain).Url))
                 .ForMember(dest => dest.FollowerCount, o => o.MapFrom(src => src.Followers.Count))

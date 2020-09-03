@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Application.Following;
 using Microsoft.AspNetCore.Mvc;
 using Application.User;
+using CloudinaryDotNet.Actions;
 using MediatR;
 
 
@@ -42,6 +43,13 @@ namespace API.Controllers
         public async Task<ActionResult<List<Profile>>> GetFollows(string username, string predicate)
         {
             return await Mediator.Send(new List.Query { Username = username, Predicate = predicate });
+        }
+
+
+        [HttpGet("{username}/activities")]
+        public async Task<ActionResult<List<UserActivityDto>>> GetUserActivities(string username, string predicate)
+        {
+            return await Mediator.Send(new ListActivities.Query { Username = username, Predicate = predicate });
         }
     }
 }

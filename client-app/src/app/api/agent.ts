@@ -1,9 +1,10 @@
 import axios, {AxiosResponse} from 'axios';
-import {IActivity} from "../models/activity";
+import {IActivitiesEnvelope, IActivity} from "../models/activity";
 import {history} from '../..';
 import {toast} from 'react-toastify';
 import {IUser, IUserFormValues} from "../models/user";
 import {IPhoto, IProfile} from "../models/profile";
+import {IUserActivity} from "../models/useractivity";
 
 
 axios.defaults.baseURL = 'http://localhost:5000/api/';
@@ -58,6 +59,7 @@ const sleep = (ms: number) => (response: AxiosResponse) =>
 //  body of the response resulting from the request
 const requests = {
     get: (url: string) => axios.get(url).then(sleep(1000)).then(responseBody),
+    getWithParams: (url: string, params: URLSearchParams) => axios.get(url, {params: params}).then(sleep(1000)).then(responseBody),
     post: (url: string, body: {}) => axios.post(url, body).then(sleep(1000)).then(responseBody),
     put: (url: string, body: {}) => axios.put(url, body).then(sleep(1000)).then(responseBody),
     delete: (url: string) => axios.delete(url).then(sleep(1000)).then(responseBody),
@@ -73,7 +75,19 @@ const requests = {
 
 // These functions use the requests axios wrapper methods to call Activity related endpoints
 const Activities = {
-    list: (): Promise<IActivity[]> => requests.get('activities'),
+    list: (limit?: number, page?: number, filter?: Map<string, string>): Promise<IActivitiesEnvelope> => {
+
+        const params = new URLSearchParams();
+
+        limit && params.append('limit', limit.toString());
+        limit && page && params.append('offset', `${page ? page * limit : 0}`);
+
+        filter && filter.forEach((value, key) => {
+            params.append(key, value);
+        });
+
+        return requests.getWithParams('activities', params);
+    },
     details: (id: string): Promise<IActivity> => requests.get(`activities/${id}`),
     create: (activity: IActivity) => requests.post('activities', activity),
     update: (activity: IActivity) => requests.put(`activities/${activity.id}`, activity),
@@ -95,7 +109,8 @@ const Profiles = {
     put: (profile: Partial<IProfile>) => requests.put(`profiles`, profile),
     follow: (username: string) => requests.post(`profiles/${username}/follow`, {}),
     unfollow: (username: string) => requests.delete(`profiles/${username}/follow`),
-    getFollowings: (username: string, predicate: string): Promise<IProfile[]> => requests.get(`/profiles/${username}/follow?predicate=${predicate}`)
+    getFollowings: (username: string, predicate: string): Promise<IProfile[]> => requests.get(`/profiles/${username}/follow?predicate=${predicate}`),
+    getActivities: (username: string, predicate: string): Promise<IUserActivity[]> => requests.get(`/profiles/${username}/activities?predicate=${predicate}`)
 }
 
 const Photos = {
