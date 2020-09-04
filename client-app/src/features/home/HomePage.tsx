@@ -7,9 +7,11 @@ import RegisterForm from "../login/registerForm";
 
 
 const HomePage = () => {
-
+    
     const {modalStore, userStore} = useContext(RootStoreContext);
     const {isLoggedIn, user} = userStore;
+
+    const token = window.localStorage.getItem('jwt');
 
     return (
         <Segment inverted textAlign='center' vertical className='masthead'>
@@ -19,7 +21,7 @@ const HomePage = () => {
                     Reactivities
                 </Header>
                 {
-                    (isLoggedIn && user)
+                    (isLoggedIn && user && token)
                         ? (
                             <Fragment>
                                 <Header as='h2' inverted content={`Welcome back ${user.displayName}`}/>

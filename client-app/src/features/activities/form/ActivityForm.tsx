@@ -13,6 +13,7 @@ import {format} from 'date-fns';
 import {combineValidators, composeValidators, hasLengthGreaterThan, isRequired} from 'revalidate';
 import {RootStoreContext} from "../../../app/stores/rootStore";
 
+
 interface RouteParams {
     id: string
 }
@@ -60,7 +61,7 @@ const ActivityForm: React.FC<RouteComponentProps<RouteParams>> = (
         date = format(date, 'yyyy-MM-dd');
         time = format(time, 'HH:mm:00');
 
-        activity.date = new Date(date + ' ' + time);
+        activity.date = new Date(date + 'T' + time);
 
         // Now we can save it (the store will figure out whether it is a new
         //  activity to be created or an update of an existing one)

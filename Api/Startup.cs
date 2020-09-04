@@ -1,3 +1,4 @@
+using System;
 using System.Text;
 using System.Threading.Tasks;
 using Api.Middleware;
@@ -59,7 +60,10 @@ namespace Api
                     policy
                         .AllowAnyHeader()
                         .AllowAnyMethod()
-                        .AllowCredentials() // This is needed for SignalR
+                        .WithExposedHeaders("WWW-Authenticate")     // This ensures that token validation errors are
+                                                                    //  available in the response headers to the client
+                                                                    //  (so that we can detect expired tokens, eg.) 
+                        .AllowCredentials()                         // This is needed for SignalR
                         .WithOrigins("http://localhost:3000").Build();
                 });
             });
@@ -107,7 +111,9 @@ namespace Api
                         ValidateIssuerSigningKey = true,
                         IssuerSigningKey = key,
                         ValidateAudience = false,
-                        ValidateIssuer = false
+                        ValidateIssuer = false,
+                        ValidateLifetime = true,
+                        ClockSkew = TimeSpan.Zero    // Remove the default 5 minute grace period on token expiry 
                     };
                     
                     // Now we plug into the authentication events so that when we are presented with

@@ -5,6 +5,7 @@ import {observer} from "mobx-react-lite";
 import {RootStoreContext} from "../../../app/stores/rootStore";
 import InfiniteScroll from 'react-infinite-scroller';
 import ActivityFilters from "./ActivityFilters";
+import ActivityListItemPlaceholder from "./ActivityListItemPlaceholder";
 
 
 const ActivityDashboard: React.FC = () => {
@@ -29,12 +30,16 @@ const ActivityDashboard: React.FC = () => {
         <Container>
             <Grid>
                 <Grid.Column width={10}>
-                    <InfiniteScroll pageStart={0}
-                                    loadMore={getNextPage}
-                                    hasMore={!loadingNext && ((page + 1) < totalPages)}
-                                    initialLoad={false}>
-                        <ActivityList/>
-                    </InfiniteScroll>
+                    {activityStore.loading && page === 0 ? (
+                        <ActivityListItemPlaceholder/>
+                    ) : (
+                        <InfiniteScroll pageStart={0}
+                                        loadMore={getNextPage}
+                                        hasMore={!loadingNext && ((page + 1) < totalPages)}
+                                        initialLoad={false}>
+                            <ActivityList/>
+                        </InfiniteScroll>
+                    )}
                 </Grid.Column>
                 <Grid.Column width={6}>
                     <ActivityFilters/>

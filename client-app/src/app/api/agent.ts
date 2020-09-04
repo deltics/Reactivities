@@ -7,7 +7,7 @@ import {IPhoto, IProfile} from "../models/profile";
 import {IUserActivity} from "../models/useractivity";
 
 
-axios.defaults.baseURL = 'http://localhost:5000/api/';
+axios.defaults.baseURL = process.env.REACT_APP_API_URL;
 
 
 axios.interceptors.request.use((config) => {
@@ -29,7 +29,15 @@ axios.interceptors.response.use(undefined, error => {
     if (!error || !error.response.hasOwnProperty('status'))
         throw error.response;
     
-    const {status, data, config} = error.response;
+    const {status, data, config, headers} = error.response;
+    
+    if ((status === 401) && (headers["www-authenticate"].includes('expired')))
+    {
+        window.localStorage.removeItem('jwt');
+        history.push('/');
+        toast.info('Session has expired.  Please login again');
+        return;
+    }
 
     // '/notfound' doesn't actually identify the NotFound component - it is simply an
     //  invalid url.  i.e. it _literally_ does not exist and so forces the NotFound route.
@@ -50,19 +58,19 @@ axios.interceptors.response.use(undefined, error => {
 const responseBody = (response: AxiosResponse) => (response?.data ?? null);
 
 
-// This is used to introduce an artificial delay in requests, for dev-testing purposes
-const sleep = (ms: number) => (response: AxiosResponse) =>
-    new Promise<AxiosResponse>(resolve => setTimeout(() => resolve(response), ms));
+// This can be used to introduce an artificial delay in requests, for dev-testing purposes
+// const sleep = (ms: number) => (response: AxiosResponse) =>
+//    new Promise<AxiosResponse>(resolve => setTimeout(() => resolve(response), ms));
 
 
 // These functions wrap axios methods for calling to a specified url.  They all simply return the
 //  body of the response resulting from the request
 const requests = {
-    get: (url: string) => axios.get(url).then(sleep(1000)).then(responseBody),
-    getWithParams: (url: string, params: URLSearchParams) => axios.get(url, {params: params}).then(sleep(1000)).then(responseBody),
-    post: (url: string, body: {}) => axios.post(url, body).then(sleep(1000)).then(responseBody),
-    put: (url: string, body: {}) => axios.put(url, body).then(sleep(1000)).then(responseBody),
-    delete: (url: string) => axios.delete(url).then(sleep(1000)).then(responseBody),
+    get: (url: string) => axios.get(url).then(responseBody),
+    getWithParams: (url: string, params: URLSearchParams) => axios.get(url, {params: params}).then(responseBody),
+    post: (url: string, body: {}) => axios.post(url, body).then(responseBody),
+    put: (url: string, body: {}) => axios.put(url, body).then(responseBody),
+    delete: (url: string) => axios.delete(url).then(responseBody),
     postFileFormData: (url: string, file: Blob) => {
         let formData = new FormData();
         formData.append('File', file);

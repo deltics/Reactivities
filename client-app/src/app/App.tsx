@@ -4,7 +4,7 @@ import NavBar from "../features/nav/NavBar";
 import ActivityDashboard from "../features/activities/dashboard/ActivityDashboard";
 import {observer} from "mobx-react-lite";
 import {Route, RouteComponentProps, withRouter} from 'react-router';
-import HomePage from "../features/home/homepage";
+import HomePage from "../features/home/HomePage";
 import ActivityForm from "../features/activities/form/ActivityForm";
 import ActivityDetail from "../features/activities/details/ActivityDetail";
 import NotFound from "./layout/NotFound";
@@ -14,6 +14,7 @@ import {RootStoreContext} from "./stores/rootStore";
 import LoadingComponent from "./layout/LoadingComponent";
 import ModalContainer from "./common/modals/ModalContainer";
 import ProfilePage from "../features/profiles/ProfilePage";
+import PrivateRoute from "./PrivateRoute";
 
 
 const App: React.FC<RouteComponentProps> = ({location}) => {
@@ -37,7 +38,7 @@ const App: React.FC<RouteComponentProps> = ({location}) => {
 
     return (
         <Fragment>
-            <ModalContainer />
+            <ModalContainer/>
             <ToastContainer position='bottom-right'/>
             <Route exact path='/' component={HomePage}/>
             <Route path={'/(.+)'} render={() => (
@@ -45,11 +46,11 @@ const App: React.FC<RouteComponentProps> = ({location}) => {
                     <NavBar/>
                     <Container style={{marginTop: '7em'}}>
                         <Switch>
-                            <Route exact path='/activities' component={ActivityDashboard}/>
-                            <Route path='/activities/:id' component={ActivityDetail}/>
-                            <Route path='/profiles/:username' component={ProfilePage}/>
-                            <Route key={location.key} path={['/createActivity', '/manage/:id']}
-                                   component={ActivityForm}/>
+                            <PrivateRoute exact path='/activities' component={ActivityDashboard}/>
+                            <PrivateRoute path='/activities/:id' component={ActivityDetail}/>
+                            <PrivateRoute path='/profiles/:username' component={ProfilePage}/>
+                            <PrivateRoute key={location.key} path={['/createActivity', '/manage/:id']}
+                                          component={ActivityForm}/>
                             <Route component={NotFound}/>
                         </Switch>
                     </Container>

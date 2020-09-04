@@ -39,6 +39,12 @@ export class ActivityFormValues implements IActivityFormValues {
     venue: string = '';
 
     constructor(init?: IActivityFormValues) {
+        // Date contains both the date and time, but in the form we present date and time
+        //  as separate values so we need to ensure that the time property also contains
+        //  the same date/time value.
+        //
+        // The Form ignores the Time component of date and ignores the Date component of time.
+        
         if (init && init.date) {
             init.time = init.date;
         }
