@@ -167,17 +167,24 @@ namespace Api
 
             // app.UseHttpsRedirection(); // Prevent redirection of http->https for the time being
 
-            app.UseCors("CorsPolicy");
+            // For serving static files (bad idea imho: should be a separate app)
+            app.UseDefaultFiles();
+            app.UseStaticFiles();
+
+            // Routing and Cors
             app.UseRouting();
+            app.UseCors("CorsPolicy");
 
             // Authentication/Authorization must come AFTER UseRouting and UseCors but BEFORE UseEndpoints
             app.UseAuthentication();
             app.UseAuthorization();
 
+            // Setup endpoints
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapControllers();                        // REST Api routing
+                endpoints.MapControllers();                  // REST Api routing
                 endpoints.MapHub<CommentHub>("comments");    // SignalR routing
+                endpoints.MapFallbackToController("Index", "Fallback");    // Fallback routing for static files (serving the React app)
             });
         }
     }
