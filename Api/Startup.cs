@@ -40,19 +40,38 @@ namespace Api
 
 
         // This method gets called by the runtime. Use this method to add services to the container.
-        public void ConfigureServices(IServiceCollection services)
+        public void ConfigureDevelopmentServices(IServiceCollection services)
         {
-            // AspNetCore services
-            services.AddControllers()
-                .AddFluentValidation(config => { config.RegisterValidatorsFromAssemblyContaining<Create>(); });
-
             // Persistence services
             services.AddDbContext<DataContext>(options =>
             {
                 options.UseLazyLoadingProxies();
                 options.UseSqlite(Configuration.GetConnectionString("default"));
             });
-            
+
+            ConfigureServices(services);
+        }
+        
+
+        public void ConfigureProductionServices(IServiceCollection services)
+        {
+            // Persistence services
+            services.AddDbContext<DataContext>(options =>
+            {
+                options.UseLazyLoadingProxies();
+                options.UseMySQL(Configuration.GetConnectionString("default"));
+            });
+
+            ConfigureServices(services);
+        }
+
+        
+        public void ConfigureServices(IServiceCollection services)
+        {
+            // AspNetCore services
+            services.AddControllers()
+                .AddFluentValidation(config => { config.RegisterValidatorsFromAssemblyContaining<Create>(); });
+
             services.AddCors(options =>
             {
                 options.AddPolicy("CorsPolicy", policy =>

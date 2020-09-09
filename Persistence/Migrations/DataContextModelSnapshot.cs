@@ -20,7 +20,7 @@ namespace Persistence.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("binary(16)");
 
                     b.Property<string>("Category")
                         .HasColumnType("TEXT");

@@ -9,8 +9,8 @@ using Persistence;
 namespace Persistence.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20200829010018_ActivityComments")]
-    partial class ActivityComments
+    [Migration("20200904234042_InitialProdDb")]
+    partial class InitialProdDb
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -22,7 +22,7 @@ namespace Persistence.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("binary(16)");
 
                     b.Property<string>("Category")
                         .HasColumnType("TEXT");
@@ -142,6 +142,21 @@ namespace Persistence.Migrations
                     b.HasIndex("AuthorId");
 
                     b.ToTable("Comments");
+                });
+
+            modelBuilder.Entity("Domain.Following", b =>
+                {
+                    b.Property<string>("ObserverId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("TargetId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("ObserverId", "TargetId");
+
+                    b.HasIndex("TargetId");
+
+                    b.ToTable("Follows");
                 });
 
             modelBuilder.Entity("Domain.Photo", b =>
@@ -323,6 +338,21 @@ namespace Persistence.Migrations
                     b.HasOne("Domain.AppUser", "Author")
                         .WithMany()
                         .HasForeignKey("AuthorId");
+                });
+
+            modelBuilder.Entity("Domain.Following", b =>
+                {
+                    b.HasOne("Domain.AppUser", "Observer")
+                        .WithMany("Following")
+                        .HasForeignKey("ObserverId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Domain.AppUser", "Target")
+                        .WithMany("Followers")
+                        .HasForeignKey("TargetId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Domain.Photo", b =>
