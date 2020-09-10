@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Migrations.Operations;
 
 namespace Persistence.Migrations
 {
@@ -8,6 +9,8 @@ namespace Persistence.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             var GuidType = "TEXT";
+            var BoolType = "INT";
+            var DateType = "TEXT(48)";
             var LoginProviderType = "TEXT";
             var ProviderKeyType = "TEXT";
             var PhotoIdType = "TEXT";
@@ -17,8 +20,24 @@ namespace Persistence.Migrations
             var UserNameType = "TEXT";
             var EmailType = "TEXT";
 
+            Console.WriteLine($"Using {ActiveProvider}");
+            
             switch (ActiveProvider)
             {
+                case "Microsoft.EntityFrameworkCore.SqlServer":
+                    GuidType = "UNIQUEIDENTIFIER";
+                    BoolType = "BIT";
+                    DateType = "DATETIME";
+                    LoginProviderType = "VARCHAR(255)";
+                    PhotoIdType = "VARCHAR(20)";
+                    ProviderKeyType = "VARCHAR(255)";
+                    RoleIdType = "VARCHAR(255)";
+                    RoleNameType = "VARCHAR(255)";
+                    UserIdType = "VARCHAR(255)";
+                    UserNameType = "VARCHAR(255)";
+                    EmailType = "VARCHAR(255)";
+                    break;
+                
                 case "MySql.Data.EntityFrameworkCore":
                     GuidType = "BINARY(16)";
                     LoginProviderType = "VARCHAR(255)";
@@ -55,15 +74,15 @@ namespace Persistence.Migrations
                     NormalizedUserName = table.Column<string>(UserNameType, maxLength: 256, nullable: true),
                     Email = table.Column<string>(EmailType, maxLength: 256, nullable: true),
                     NormalizedEmail = table.Column<string>(EmailType, maxLength: 256, nullable: true),
-                    EmailConfirmed = table.Column<bool>(nullable: false),
+                    EmailConfirmed = table.Column<bool>(BoolType, nullable: false),
                     PasswordHash = table.Column<string>(nullable: true),
                     SecurityStamp = table.Column<string>(nullable: true),
                     ConcurrencyStamp = table.Column<string>(nullable: true),
                     PhoneNumber = table.Column<string>(nullable: true),
-                    PhoneNumberConfirmed = table.Column<bool>(nullable: false),
-                    TwoFactorEnabled = table.Column<bool>(nullable: false),
-                    LockoutEnd = table.Column<DateTimeOffset>(nullable: true),
-                    LockoutEnabled = table.Column<bool>(nullable: false),
+                    PhoneNumberConfirmed = table.Column<bool>(BoolType, nullable: false),
+                    TwoFactorEnabled = table.Column<bool>(BoolType, nullable: false),
+                    LockoutEnd = table.Column<DateTimeOffset>(DateType, nullable: true),
+                    LockoutEnabled = table.Column<bool>(BoolType, nullable: false),
                     AccessFailedCount = table.Column<int>(nullable: false),
                     DisplayName = table.Column<string>(nullable: true),
                     Bio = table.Column<string>(nullable: true)
@@ -187,7 +206,7 @@ namespace Persistence.Migrations
                     Title = table.Column<string>(nullable: true),
                     Description = table.Column<string>(nullable: true),
                     Category = table.Column<string>(nullable: true),
-                    Date = table.Column<DateTime>(nullable: false),
+                    Date = table.Column<DateTime>(DateType, nullable: false),
                     City = table.Column<string>(nullable: true),
                     Venue = table.Column<string>(nullable: true)
                 },
@@ -204,7 +223,7 @@ namespace Persistence.Migrations
                     Body = table.Column<string>(nullable: true),
                     AuthorId = table.Column<string>(UserIdType, nullable: true),
                     ActivityId = table.Column<Guid>(GuidType, nullable: true),
-                    CreatedAt = table.Column<DateTime>(nullable: false)
+                    CreatedAt = table.Column<DateTime>(DateType, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -253,7 +272,7 @@ namespace Persistence.Migrations
                 {
                     Id = table.Column<string>(PhotoIdType, nullable: false),
                     Url = table.Column<string>(nullable: true),
-                    IsMain = table.Column<bool>(nullable: false),
+                    IsMain = table.Column<bool>(BoolType, nullable: false),
                     AppUserId = table.Column<string>(UserIdType, nullable: true)
                 },
                 constraints: table =>
@@ -273,8 +292,8 @@ namespace Persistence.Migrations
                 {
                     AppUserId = table.Column<string>(UserIdType, nullable: false),
                     ActivityId = table.Column<Guid>(GuidType, nullable: false),
-                    DateJoined = table.Column<DateTime>(nullable: false),
-                    IsHost = table.Column<bool>(nullable: false)
+                    DateJoined = table.Column<DateTime>(DateType, nullable: false),
+                    IsHost = table.Column<bool>(BoolType, nullable: false)
                 },
                 constraints: table =>
                 {
