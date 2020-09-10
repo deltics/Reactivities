@@ -1,12 +1,14 @@
 import React, {useContext} from 'react';
 import {Form as FinalForm, Field} from 'react-final-form';
-import {Button, Form, Header} from 'semantic-ui-react';
+import {Button, Form, Header, Divider} from 'semantic-ui-react';
 import TextInput from "../../app/common/form/TextInput";
 import {RootStoreContext} from "../../app/stores/rootStore";
 import {IUserFormValues} from "../../app/models/user";
 import {FORM_ERROR} from "final-form";
 import {combineValidators, isRequired} from "revalidate";
 import ErrorMessage from "../../app/common/form/ErrorMessage";
+import FBLogin from "./FBLogin";
+import {observer} from "mobx-react-lite";
 
 
 const validate = combineValidators({
@@ -17,12 +19,13 @@ const validate = combineValidators({
 
 const LoginForm = () => {
 
-    const {userStore} = useContext(RootStoreContext);
+    const {login, facebookLogin, isFacebookLoginActive} = useContext(RootStoreContext).userStore;
+
 
     return (
         <FinalForm validate={validate}
                    onSubmit={(values: IUserFormValues) =>
-                       userStore.login(values).catch(error => ({
+                       login(values).catch(error => ({
                            [FORM_ERROR]: error
                        }))
                    }
@@ -55,10 +58,12 @@ const LoginForm = () => {
                                    disabled={(invalid && !dirtySinceLastSubmit) || pristine}
                                    loading={submitting}
                                    content='Login'/>
+                           <Divider horizontal>or</Divider>
+                           <FBLogin callback={facebookLogin} loading={isFacebookLoginActive} />
                        </Form>
                    )}/>
     )
 }
 
 
-export default LoginForm;
+export default observer(LoginForm);

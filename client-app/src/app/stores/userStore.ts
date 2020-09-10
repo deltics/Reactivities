@@ -15,6 +15,7 @@ class UserStore {
 
 
     @observable user: IUser | null = null;
+    @observable isFacebookLoginActive: boolean = false;
 
 
     @computed get isLoggedIn() {
@@ -75,6 +76,26 @@ class UserStore {
         this.user = null;
         
         history.push('/');
+    }
+    
+    
+    @action facebookLogin = async (response: any) => {
+        this.isFacebookLoginActive = true;
+        try {
+            const user = await agent.User.fbLogin(response.accessToken);
+            
+            runInAction(() => {
+                this.user = user;
+            });
+            
+            this.rootStore.commonStore.setToken(user.token);
+            this.rootStore.modalStore.closeModal();
+            history.push('/activities');
+        } catch (error) {
+            console.error(error);
+        } finally {
+            runInAction(() => this.isFacebookLoginActive = false);
+        }
     }
 }
 
