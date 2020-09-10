@@ -176,9 +176,13 @@ namespace Api
             services.AddScoped<ICurrentUser, CurrentUser>();
             services.AddScoped<IProfileReader, ProfileReader>();
             services.AddScoped<IPhotoStorage, CloudinaryPhotoStorage>();
+            services.AddScoped<IFacebookAccessor, FacebookAccessor>();
             
             // Cloudinary configuration (for PhotoStorage)
             services.Configure<CloudinarySettings>(Configuration.GetSection("Cloudinary"));
+
+            // Facebook Login configuration
+            services.Configure<FacebookAppSettings>(Configuration.GetSection("Authentication:Facebook"));
         }
 
 
