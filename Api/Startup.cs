@@ -46,7 +46,9 @@ namespace Api
             services.AddDbContext<DataContext>(options =>
             {
                 options.UseLazyLoadingProxies();
-                options.UseSqlite(Configuration.GetConnectionString("default"));
+//                options.UseMySQL(Configuration.GetConnectionString("mysql"));
+//                options.UseSqlite(Configuration.GetConnectionString("sqlite"));
+                options.UseSqlServer(Configuration.GetConnectionString(Configuration["Database:UseConnection"] ?? "default"));
             });
 
             ConfigureServices(services);
@@ -59,7 +61,9 @@ namespace Api
             services.AddDbContext<DataContext>(options =>
             {
                 options.UseLazyLoadingProxies();
-                options.UseMySQL(Configuration.GetConnectionString("default"));
+//                options.UseMySQL(Configuration.GetConnectionString("mysql"));
+//                options.UseSqlite(Configuration.GetConnectionString("sqlite"));
+                options.UseSqlServer(Configuration.GetConnectionString(Configuration["Database:UseConnection"] ?? "default"));
             });
 
             ConfigureServices(services);
