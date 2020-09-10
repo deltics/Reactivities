@@ -42,6 +42,8 @@ namespace Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureDevelopmentServices(IServiceCollection services)
         {
+            Console.WriteLine("DEVELOPMENT SERVER");
+            
             // Persistence services
             services.AddDbContext<DataContext>(options =>
             {
@@ -57,6 +59,8 @@ namespace Api
 
         public void ConfigureProductionServices(IServiceCollection services)
         {
+            Console.WriteLine("PRODUCTION SERVER");
+            
             // Persistence services
             services.AddDbContext<DataContext>(options =>
             {
