@@ -12,6 +12,20 @@
     <PackageReference Include="MySql.Data.EntityFrameworkCore" Version="8.0.21" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Remove="oldmig\20200904234042_InitialProdDb - Copy.Designer.cs" />
+    <Compile Remove="oldmig\20200911022254_RefreshTokens - Copy.Designer.cs" />
+    <Compile Remove="oldmig\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Remove="oldmig\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="oldmig\**" />
+  </ItemGroup>
+
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>

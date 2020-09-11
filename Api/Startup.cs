@@ -5,6 +5,7 @@ using Api.Middleware;
 using Api.SignalR;
 using Application.Activities;
 using Application.Interfaces;
+using Application.User;
 using AutoMapper;
 using FluentValidation.AspNetCore;
 using Domain;
@@ -24,6 +25,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Persistence;
+using CurrentUser = Infrastructure.Security.CurrentUser;
 
 
 namespace Api
@@ -145,7 +147,12 @@ namespace Api
                     
                     // Now we plug into the authentication events so that when we are presented with
                     //  an access_token with a request to the /comments endpoint, we extract that
-                    //  token and apply it to the message context 
+                    //  token and apply it to the message context.
+                    //
+                    // This hook into Events is only needed to make the user Jwt available to the context
+                    //  for the SignalR endpoint.  Regular controller endpoints automatically object this
+                    //  through the HttpContext support for bearer tokens.
+                    
                     opt.Events = new JwtBearerEvents
                     {
                         OnMessageReceived = context =>
@@ -177,6 +184,7 @@ namespace Api
             services.AddScoped<IProfileReader, ProfileReader>();
             services.AddScoped<IPhotoStorage, CloudinaryPhotoStorage>();
             services.AddScoped<IFacebookAccessor, FacebookAccessor>();
+            services.AddScoped<IUserDtoCreator, UserDtoCreator>();
             
             // Cloudinary configuration (for PhotoStorage)
             services.Configure<CloudinarySettings>(Configuration.GetSection("Cloudinary"));

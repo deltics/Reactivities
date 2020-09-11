@@ -33,14 +33,16 @@ namespace Application.User
             private readonly UserManager<AppUser> _userManager;
             private readonly IFacebookAccessor _facebookAccessor;
             private readonly IJwtGenerator _jwtGenerator;
+            private readonly IUserDtoCreator _userDtoCreator;
 
 
             public Handler(UserManager<AppUser> userManager, IFacebookAccessor facebookAccessor,
-                IJwtGenerator jwtGenerator)
+                IJwtGenerator jwtGenerator, IUserDtoCreator userDtoCreator)
             {
                 _userManager = userManager;
                 _facebookAccessor = facebookAccessor;
                 _jwtGenerator = jwtGenerator;
+                _userDtoCreator = userDtoCreator;
             }
 
 
@@ -75,13 +77,7 @@ namespace Application.User
                         throw new RESTException(HttpStatusCode.BadRequest, new {User = "Unable to create user"});
                 }
 
-                return new UserDto
-                {
-                    DisplayName = user.DisplayName,
-                    Username = user.Email,
-                    Image = user.Photos.FirstOrDefault(x => x.IsMain)?.Url,
-                    Token = _jwtGenerator.CreateToken(user)
-                };
+                return await _userDtoCreator.CreateUserDto(user);
             }
         }
     }

@@ -59,16 +59,17 @@ namespace Infrastructure.Security
             else
                 context.Succeed(requirement);
 
-            // Why do we call context.Succeed twice?
+            // Q: Why do we call context.Succeed under two different conditions?
             //
-            // A: Because in the event that the activity does not exist the requirement that the current
-            //  user be the host of a specified activity cannot be said to have failed.
+            // A: Because in the event that an ACTIVITY does not exist the requirement that the current
+            //  user be the host of that activity cannot be said to have failed.
             //
             // Ideally we would be able to indicate "Not applicable", but we can't so we just "succeed"
             //  as a way of saying "Fine by me I guess", and let other error handling proceed (i.e. NotFound)
             //
             // If we failed the requirement in those conditions then the response would be FORBIDDEN which
-            //  would not be semantically correct.
+            //  would not be semantically correct.  You can't be FORBIDDEN access to something that
+            //  doesn't even exist.
 
             return Task.CompletedTask;
         }
