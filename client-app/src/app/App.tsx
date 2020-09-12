@@ -19,21 +19,22 @@ import PrivateRoute from "./PrivateRoute";
 
 const App: React.FC<RouteComponentProps> = ({location}) => {
     const {activityStore, commonStore, userStore} = useContext(RootStoreContext);
+    const {getUser} = userStore;
+    const {loadActivities} = activityStore;
+    const {appLoaded, setAppLoaded, token} = commonStore;
 
     useEffect(() => {
-        activityStore.loadActivities()
-    }, [activityStore]);
-
-    useEffect(() => {
-        if (commonStore.token) {
-            userStore.getUser().finally(() => commonStore.setAppLoaded());
+        if (token && !appLoaded) {
+            getUser()
+                .then(loadActivities)
+                .finally(() => setAppLoaded());
         } else {
-            commonStore.setAppLoaded();
+            setAppLoaded();
         }
-    }, [commonStore, userStore, commonStore.token, userStore.getUser, commonStore.setAppLoaded]);
+    }, [token, getUser, loadActivities, appLoaded, setAppLoaded]);
 
 
-    if (!commonStore.appLoaded)
+    if (!appLoaded)
         return <LoadingComponent content='Loading application...'/>;
 
     return (

@@ -25,10 +25,10 @@ class UserStore {
         //
         // The expiry is in the future, so calculate the time period between
         //  that future time and now, in milliseconds.  We want to trigger
-        //  a call to refresh our token 1 minute before the token expires
-        //  so we subtract 60,000 milliseconds from the calculated time
+        //  a call to refresh our token 30 seconds before the token expires
+        //  so we subtract 30,000 milliseconds from the calculated time
 
-        const triggerTime = expires.getTime() - Date.now() - (60 * 1000);
+        const triggerTime = expires.getTime() - Date.now() - (30 * 1000);
 
         // Now set a timer that will call this.refreshToken at the specified time,
         //  storing the timeoutId
@@ -42,13 +42,15 @@ class UserStore {
 
 
     @action setUser = (user: IUser) => {
+        this.user = user;
         this.rootStore.commonStore.setToken(user.token);
-        this.startRefreshTokenTimer(user);
 
         if (this.rootStore.modalStore.modal) {
             this.rootStore.modalStore.closeModal();
             history.push('/activities');
         }
+
+        this.startRefreshTokenTimer(user);
     }
 
 
@@ -63,12 +65,7 @@ class UserStore {
 
     @action getUser = async () => {
         try {
-            const user = await agent.User.current();
-            runInAction(() => {
-                this.user = user;
-            })
-            this.rootStore.commonStore.setToken(user.token);
-            this.rootStore.modalStore.closeModal();
+            this.setUser(await agent.User.current());
         } catch (err) {
             console.error(err);
         }
@@ -77,18 +74,7 @@ class UserStore {
 
     @action login = async (values: IUserFormValues) => {
         try {
-            const user = await agent.User.login(values);
-            runInAction(() => {
-                this.user = user;
-            });
-
-            // Only code that modifies the observables in the store needs to "runInAction".
-
-            this.rootStore.commonStore.setToken(user.token);
-            this.rootStore.modalStore.closeModal();
-
-            history.push('/activities');
-
+            this.setUser(await agent.User.login(values));
         } catch (err) {
             console.error(err);
             throw err;
@@ -98,12 +84,7 @@ class UserStore {
 
     @action register = async (values: IUserFormValues) => {
         try {
-            const user = await agent.User.register(values);
-
-            this.rootStore.commonStore.setToken(user.token);
-            this.rootStore.modalStore.closeModal()
-
-            history.push('/activities');
+            this.setUser(await agent.User.register(values));
         } catch (error) {
             console.error(error);
             throw error;
@@ -112,6 +93,7 @@ class UserStore {
 
 
     @action logout = () => {
+        this.stopRefreshTokenTimer();
         this.rootStore.commonStore.setToken(null);
         this.user = null;
 
@@ -122,15 +104,7 @@ class UserStore {
     @action facebookLogin = async (response: any) => {
         this.isFacebookLoginActive = true;
         try {
-            const user = await agent.User.fbLogin(response.accessToken);
-
-            runInAction(() => {
-                this.user = user;
-            });
-
-            this.rootStore.commonStore.setToken(user.token);
-            this.rootStore.modalStore.closeModal();
-            history.push('/activities');
+            this.setUser(await agent.User.fbLogin(response.accessToken));
         } catch (error) {
             console.error(error);
         } finally {

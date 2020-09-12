@@ -15,6 +15,14 @@ axios.interceptors.request.use((config) => {
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
+
+//    config.withCredentials = true;  // Without this the refresh token cookie will not be passed back to the Api
+                                    //  (in development mode) since the client app and the api have different
+                                    //  hostnames (:5000 vs :3000).
+                                    //
+                                    // This doesn't matter for PROD deployment using the monolithic api/app
+                                    //  approach but does in development.
+    
     return config;
 }, error => {
     return Promise.reject(error);
@@ -25,14 +33,13 @@ axios.interceptors.response.use(undefined, error => {
 
     if ((error.message === 'Network Error') && (!error.response))
         toast.error('Network error.  Check that the server is available.');
-    
+
     if (!error || !error.response.hasOwnProperty('status'))
         throw error.response;
-    
+
     const {status, data, config, headers} = error.response;
-    
-    if ((status === 401) && (headers["www-authenticate"].includes('expired')))
-    {
+
+    if ((status === 401) && (headers["www-authenticate"]?.includes('expired'))) {
         window.localStorage.removeItem('jwt');
         history.push('/');
         toast.info('Session has expired.  Please login again');
@@ -67,18 +74,20 @@ const responseBody = (response: AxiosResponse) => (response?.data ?? null);
 //  body of the response resulting from the request
 const requests = {
     get: (url: string) => axios.get(url).then(responseBody),
+    getWithCredentials: (url: string) => axios.get(url, {withCredentials: true}).then(responseBody),
     getWithParams: (url: string, params: URLSearchParams) => axios.get(url, {params: params}).then(responseBody),
     post: (url: string, body: {}) => axios.post(url, body).then(responseBody),
-    put: (url: string, body: {}) => axios.put(url, body).then(responseBody),
-    delete: (url: string) => axios.delete(url).then(responseBody),
     postFileFormData: (url: string, file: Blob) => {
         let formData = new FormData();
         formData.append('File', file);
-        
+
         return axios.post(url, formData, {
             headers: {'Content-Type': 'multipart/form-data'}
         }).then(responseBody);
     },
+    postWithCredentials: (url: string, body: {}) => axios.post(url, body, {withCredentials: true}).then(responseBody),
+    put: (url: string, body: {}) => axios.put(url, body).then(responseBody),
+    delete: (url: string) => axios.delete(url).then(responseBody),
 };
 
 // These functions use the requests axios wrapper methods to call Activity related endpoints
@@ -106,11 +115,11 @@ const Activities = {
 
 // These functions use the requests axios wrapper methods to call User related endpoints
 const User = {
-    current: (): Promise<IUser> => requests.get('/user'),
-    login: (user: IUserFormValues): Promise<IUser> => requests.post('/user/login', user),
-    register: (user: IUserFormValues): Promise<IUser> => requests.post('/user/register', user),
-    fbLogin: (accessToken: string) => requests.post(`/user/facebook`, {accessToken}),
-    refreshToken: (): Promise<IUser> => requests.post(`/user/refreshToken`, {})
+    current: (): Promise<IUser> => requests.getWithCredentials('/user'),
+    login: (user: IUserFormValues): Promise<IUser> => requests.postWithCredentials('/user/login', user),
+    register: (user: IUserFormValues): Promise<IUser> => requests.postWithCredentials('/user/register', user),
+    fbLogin: (accessToken: string) => requests.postWithCredentials(`/user/facebook`, {accessToken}),
+    refreshToken: (): Promise<IUser> => requests.postWithCredentials(`/user/refreshToken`, {})
 }
 
 // These functions use the requests axios wrapper methods to call User related endpoints

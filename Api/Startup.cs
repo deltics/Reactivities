@@ -93,7 +93,8 @@ namespace Api
                                                                     //  available in the response headers to the client
                                                                     //  (so that we can detect expired tokens, eg.) 
                         .AllowCredentials()                         // This is needed for SignalR
-                        .WithOrigins("http://localhost:3000").Build();
+                        .WithOrigins("http://localhost:3000")    // Need to list origins that are not the same as the Api host - this is for the client app running locally on :3000 (vs host on :5000)
+                        .Build();
                 });
             });
 
