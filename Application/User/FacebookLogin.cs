@@ -60,6 +60,7 @@ namespace Application.User
                         Id = facebookUser.Id,
                         DisplayName = facebookUser.Name,
                         Email = facebookUser.Email,
+                        EmailConfirmed = true,                // Could require specific verification ... ?
                         UserName = "fb_" + facebookUser.Id
                     };
 

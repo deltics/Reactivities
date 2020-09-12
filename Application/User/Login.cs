@@ -52,8 +52,11 @@ namespace Application.User
             {
                 var user = await _userManager.FindByEmailAsync(request.Email);
                 if (user == null)
-                    throw new RESTException(HttpStatusCode.Unauthorized); // NOPE!  Should be not found, surely
+                    throw new RESTException(HttpStatusCode.Unauthorized); // NOPE!  Should be "not found", surely? TODO: Research best practice for REST response when user does not exist at login
 
+                if (!user.EmailConfirmed)
+                    throw new RESTException(HttpStatusCode.Unauthorized, new {Email = "Email address had not been confirmed"});
+                
                 var signIn = await _signInManager.CheckPasswordSignInAsync(user, request.Password, false);
                 if (!(signIn.Succeeded))
                     throw new RESTException(HttpStatusCode.Unauthorized);

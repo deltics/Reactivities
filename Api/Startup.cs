@@ -9,6 +9,7 @@ using Application.User;
 using AutoMapper;
 using FluentValidation.AspNetCore;
 using Domain;
+using Infrastructure.Email;
 using Infrastructure.PhotoStorage;
 using Infrastructure.Readers;
 using Infrastructure.Security;
@@ -126,10 +127,14 @@ namespace Api
             });
 
             // Identity services (Identity Framework)
-            var identity = services.AddIdentityCore<AppUser>();
+            var identity = services.AddIdentityCore<AppUser>(options =>
+            {
+                options.SignIn.RequireConfirmedEmail = true;
+            });
             var identityBuilder = new IdentityBuilder(identity.UserType, identity.Services);
             identityBuilder.AddEntityFrameworkStores<DataContext>();
             identityBuilder.AddSignInManager<SignInManager<AppUser>>();
+            identityBuilder.AddDefaultTokenProviders();    // For email verification via SendGrid
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(opt =>
@@ -185,6 +190,7 @@ namespace Api
             services.AddScoped<IProfileReader, ProfileReader>();
             services.AddScoped<IPhotoStorage, CloudinaryPhotoStorage>();
             services.AddScoped<IFacebookAccessor, FacebookAccessor>();
+            services.AddScoped<IEmailSender, EmailSender>();
             services.AddScoped<IUserDtoCreator, UserDtoCreator>();
             
             // Cloudinary configuration (for PhotoStorage)
@@ -192,6 +198,9 @@ namespace Api
 
             // Facebook Login configuration
             services.Configure<FacebookAppSettings>(Configuration.GetSection("Authentication:Facebook"));
+
+            // SendGrid configuration
+            services.Configure<SendGridSettings>(Configuration.GetSection("SendGrid"));
         }
 
 

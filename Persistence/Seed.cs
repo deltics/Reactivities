@@ -272,7 +272,8 @@ namespace Persistence
                     Id = "a",
                     DisplayName = "Bob",
                     UserName = "bob",
-                    Email = "bob@test.com"
+                    Email = "bob@test.com",
+                    EmailConfirmed = true    // So we have one test user who can log-in!
                 },
                 new AppUser
                 {
