@@ -5,9 +5,11 @@ using Api.Middleware;
 using Api.SignalR;
 using Application.Activities;
 using Application.Interfaces;
+using Application.User;
 using AutoMapper;
 using FluentValidation.AspNetCore;
 using Domain;
+using Infrastructure.Email;
 using Infrastructure.PhotoStorage;
 using Infrastructure.Readers;
 using Infrastructure.Security;
@@ -24,6 +26,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Persistence;
+using CurrentUser = Infrastructure.Security.CurrentUser;
 
 
 namespace Api
@@ -91,7 +94,8 @@ namespace Api
                                                                     //  available in the response headers to the client
                                                                     //  (so that we can detect expired tokens, eg.) 
                         .AllowCredentials()                         // This is needed for SignalR
-                        .WithOrigins("http://localhost:3000").Build();
+                        .WithOrigins("http://localhost:3000")    // Need to list origins that are not the same as the Api host - this is for the client app running locally on :3000 (vs host on :5000)
+                        .Build();
                 });
             });
 
@@ -123,10 +127,14 @@ namespace Api
             });
 
             // Identity services (Identity Framework)
-            var identity = services.AddIdentityCore<AppUser>();
+            var identity = services.AddIdentityCore<AppUser>(options =>
+            {
+                options.SignIn.RequireConfirmedEmail = true;
+            });
             var identityBuilder = new IdentityBuilder(identity.UserType, identity.Services);
             identityBuilder.AddEntityFrameworkStores<DataContext>();
             identityBuilder.AddSignInManager<SignInManager<AppUser>>();
+            identityBuilder.AddDefaultTokenProviders();    // For email verification via SendGrid
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(opt =>
@@ -145,7 +153,12 @@ namespace Api
                     
                     // Now we plug into the authentication events so that when we are presented with
                     //  an access_token with a request to the /comments endpoint, we extract that
-                    //  token and apply it to the message context 
+                    //  token and apply it to the message context.
+                    //
+                    // This hook into Events is only needed to make the user Jwt available to the context
+                    //  for the SignalR endpoint.  Regular controller endpoints automatically object this
+                    //  through the HttpContext support for bearer tokens.
+                    
                     opt.Events = new JwtBearerEvents
                     {
                         OnMessageReceived = context =>
@@ -177,12 +190,17 @@ namespace Api
             services.AddScoped<IProfileReader, ProfileReader>();
             services.AddScoped<IPhotoStorage, CloudinaryPhotoStorage>();
             services.AddScoped<IFacebookAccessor, FacebookAccessor>();
+            services.AddScoped<IEmailSender, EmailSender>();
+            services.AddScoped<IUserDtoCreator, UserDtoCreator>();
             
             // Cloudinary configuration (for PhotoStorage)
             services.Configure<CloudinarySettings>(Configuration.GetSection("Cloudinary"));
 
             // Facebook Login configuration
             services.Configure<FacebookAppSettings>(Configuration.GetSection("Authentication:Facebook"));
+
+            // SendGrid configuration
+            services.Configure<SendGridSettings>(Configuration.GetSection("SendGrid"));
         }
 
 

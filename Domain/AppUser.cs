@@ -21,5 +21,6 @@ namespace Domain
         public virtual ICollection<Photo> Photos { get; set; }
         public virtual ICollection<Following> Following { get; set; }
         public virtual ICollection<Following> Followers { get; set; }
+        public virtual ICollection<RefreshToken> RefreshTokens { get; set; }
     }
 }

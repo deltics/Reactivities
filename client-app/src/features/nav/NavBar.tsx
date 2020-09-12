@@ -35,6 +35,9 @@ const NavBar: React.FC = () => {
                                                        to={`/profiles/${user.username}`}
                                                        text='My profile'
                                                        icon='user'/>
+                                        <Dropdown.Item onClick={userStore.refreshToken}
+                                                       text='Refresh Token'
+                                                       icon='refresh'/>
                                         <Dropdown.Item onClick={userStore.logout} text='Logout'
                                                        icon='power'/>
                                     </Dropdown.Menu>

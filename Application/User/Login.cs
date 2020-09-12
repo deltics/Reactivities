@@ -36,13 +36,15 @@ namespace Application.User
             private readonly UserManager<AppUser> _userManager;
             private readonly SignInManager<AppUser> _signInManager;
             private readonly IJwtGenerator _jwtGenerator;
+            private readonly IUserDtoCreator _userDtoCreator;
 
 
-            public Handler(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, IJwtGenerator jwtGenerator)
+            public Handler(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, IJwtGenerator jwtGenerator, IUserDtoCreator userDtoCreator)
             {
                 _userManager = userManager;
                 _signInManager = signInManager;
                 _jwtGenerator = jwtGenerator;
+                _userDtoCreator = userDtoCreator;
             }
 
 
@@ -50,21 +52,16 @@ namespace Application.User
             {
                 var user = await _userManager.FindByEmailAsync(request.Email);
                 if (user == null)
-                    throw new RESTException(HttpStatusCode.Unauthorized); // NOPE!  Should be not found, surely
+                    throw new RESTException(HttpStatusCode.Unauthorized); // NOPE!  Should be "not found", surely? TODO: Research best practice for REST response when user does not exist at login
 
+                if (!user.EmailConfirmed)
+                    throw new RESTException(HttpStatusCode.Unauthorized, new {Email = "Email address had not been confirmed"});
+                
                 var signIn = await _signInManager.CheckPasswordSignInAsync(user, request.Password, false);
                 if (!(signIn.Succeeded))
                     throw new RESTException(HttpStatusCode.Unauthorized);
 
-                var image = user.Photos.SingleOrDefault(x => x.IsMain);
-                
-                return new UserDto
-                {
-                    DisplayName = user.DisplayName,
-                    Username = user.Email,
-                    Image = image?.Url,
-                    Token = _jwtGenerator.CreateToken(user)
-                };
+                return await _userDtoCreator.CreateUserDto(user);
             }
         }
     }

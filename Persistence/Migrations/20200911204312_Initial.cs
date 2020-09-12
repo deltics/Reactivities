@@ -1,63 +1,36 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
-using Microsoft.EntityFrameworkCore.Migrations.Operations;
 
 namespace Persistence.Migrations
 {
-    public partial class InitialProdDb : Migration
+    public partial class Initial : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            var GuidType = "TEXT";
-            var BoolType = "INT";
-            var DateType = "TEXT(48)";
-            var LoginProviderType = "TEXT";
-            var ProviderKeyType = "TEXT";
-            var PhotoIdType = "TEXT";
-            var RoleIdType = "TEXT";
-            var RoleNameType = "TEXT";
-            var UserIdType = "TEXT";
-            var UserNameType = "TEXT";
-            var EmailType = "TEXT";
-
-            Console.WriteLine($"Using {ActiveProvider}");
-            
-            switch (ActiveProvider)
-            {
-                case "Microsoft.EntityFrameworkCore.SqlServer":
-                    GuidType = "UNIQUEIDENTIFIER";
-                    BoolType = "BIT";
-                    DateType = "DATETIME";
-                    LoginProviderType = "VARCHAR(255)";
-                    PhotoIdType = "VARCHAR(20)";
-                    ProviderKeyType = "VARCHAR(255)";
-                    RoleIdType = "VARCHAR(255)";
-                    RoleNameType = "VARCHAR(255)";
-                    UserIdType = "VARCHAR(255)";
-                    UserNameType = "VARCHAR(255)";
-                    EmailType = "VARCHAR(255)";
-                    break;
-                
-                case "MySql.Data.EntityFrameworkCore":
-                    GuidType = "BINARY(16)";
-                    LoginProviderType = "VARCHAR(255)";
-                    PhotoIdType = "VARCHAR(20)";
-                    ProviderKeyType = "VARCHAR(255)";
-                    RoleIdType = "VARCHAR(255)";
-                    RoleNameType = "VARCHAR(255)";
-                    UserIdType = "VARCHAR(255)";
-                    UserNameType = "VARCHAR(255)";
-                    EmailType = "VARCHAR(255)";
-                    break;
-            }
+            migrationBuilder.CreateTable(
+                name: "Activities",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(nullable: false),
+                    Title = table.Column<string>(nullable: true),
+                    Description = table.Column<string>(nullable: true),
+                    Category = table.Column<string>(nullable: true),
+                    Date = table.Column<DateTime>(nullable: false),
+                    City = table.Column<string>(nullable: true),
+                    Venue = table.Column<string>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Activities", x => x.Id);
+                });
 
             migrationBuilder.CreateTable(
                 name: "AspNetRoles",
                 columns: table => new
                 {
-                    Id = table.Column<string>(RoleIdType, nullable: false),
-                    Name = table.Column<string>(RoleNameType, maxLength: 256, nullable: true),
-                    NormalizedName = table.Column<string>(RoleNameType, maxLength: 256, nullable: true),
+                    Id = table.Column<string>(nullable: false),
+                    Name = table.Column<string>(maxLength: 256, nullable: true),
+                    NormalizedName = table.Column<string>(maxLength: 256, nullable: true),
                     ConcurrencyStamp = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
@@ -69,20 +42,20 @@ namespace Persistence.Migrations
                 name: "AspNetUsers",
                 columns: table => new
                 {
-                    Id = table.Column<string>(UserIdType, nullable: false),
-                    UserName = table.Column<string>(UserNameType, maxLength: 256, nullable: true),
-                    NormalizedUserName = table.Column<string>(UserNameType, maxLength: 256, nullable: true),
-                    Email = table.Column<string>(EmailType, maxLength: 256, nullable: true),
-                    NormalizedEmail = table.Column<string>(EmailType, maxLength: 256, nullable: true),
-                    EmailConfirmed = table.Column<bool>(BoolType, nullable: false),
+                    Id = table.Column<string>(nullable: false),
+                    UserName = table.Column<string>(maxLength: 256, nullable: true),
+                    NormalizedUserName = table.Column<string>(maxLength: 256, nullable: true),
+                    Email = table.Column<string>(maxLength: 256, nullable: true),
+                    NormalizedEmail = table.Column<string>(maxLength: 256, nullable: true),
+                    EmailConfirmed = table.Column<bool>(nullable: false),
                     PasswordHash = table.Column<string>(nullable: true),
                     SecurityStamp = table.Column<string>(nullable: true),
                     ConcurrencyStamp = table.Column<string>(nullable: true),
                     PhoneNumber = table.Column<string>(nullable: true),
-                    PhoneNumberConfirmed = table.Column<bool>(BoolType, nullable: false),
-                    TwoFactorEnabled = table.Column<bool>(BoolType, nullable: false),
-                    LockoutEnd = table.Column<DateTimeOffset>(DateType, nullable: true),
-                    LockoutEnabled = table.Column<bool>(BoolType, nullable: false),
+                    PhoneNumberConfirmed = table.Column<bool>(nullable: false),
+                    TwoFactorEnabled = table.Column<bool>(nullable: false),
+                    LockoutEnd = table.Column<DateTimeOffset>(nullable: true),
+                    LockoutEnabled = table.Column<bool>(nullable: false),
                     AccessFailedCount = table.Column<int>(nullable: false),
                     DisplayName = table.Column<string>(nullable: true),
                     Bio = table.Column<string>(nullable: true)
@@ -97,8 +70,8 @@ namespace Persistence.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    RoleId = table.Column<string>(RoleIdType, nullable: false),
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    RoleId = table.Column<string>(nullable: false),
                     ClaimType = table.Column<string>(nullable: true),
                     ClaimValue = table.Column<string>(nullable: true)
                 },
@@ -118,8 +91,8 @@ namespace Persistence.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    UserId = table.Column<string>(UserIdType, nullable: false),
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<string>(nullable: false),
                     ClaimType = table.Column<string>(nullable: true),
                     ClaimValue = table.Column<string>(nullable: true)
                 },
@@ -138,10 +111,10 @@ namespace Persistence.Migrations
                 name: "AspNetUserLogins",
                 columns: table => new
                 {
-                    LoginProvider = table.Column<string>(LoginProviderType, nullable: false),
-                    ProviderKey = table.Column<string>(ProviderKeyType, nullable: false),
+                    LoginProvider = table.Column<string>(nullable: false),
+                    ProviderKey = table.Column<string>(nullable: false),
                     ProviderDisplayName = table.Column<string>(nullable: true),
-                    UserId = table.Column<string>(UserIdType, nullable: false)
+                    UserId = table.Column<string>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -158,8 +131,8 @@ namespace Persistence.Migrations
                 name: "AspNetUserRoles",
                 columns: table => new
                 {
-                    UserId = table.Column<string>(UserIdType, nullable: false),
-                    RoleId = table.Column<string>(RoleIdType, nullable: false)
+                    UserId = table.Column<string>(nullable: false),
+                    RoleId = table.Column<string>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -182,9 +155,9 @@ namespace Persistence.Migrations
                 name: "AspNetUserTokens",
                 columns: table => new
                 {
-                    UserId = table.Column<string>(UserIdType, nullable: false),
-                    LoginProvider = table.Column<string>(LoginProviderType, nullable: false),
-                    Name = table.Column<string>(UserNameType, nullable: false),
+                    UserId = table.Column<string>(nullable: false),
+                    LoginProvider = table.Column<string>(nullable: false),
+                    Name = table.Column<string>(nullable: false),
                     Value = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
@@ -199,31 +172,14 @@ namespace Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Activities",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(GuidType, nullable: false),
-                    Title = table.Column<string>(nullable: true),
-                    Description = table.Column<string>(nullable: true),
-                    Category = table.Column<string>(nullable: true),
-                    Date = table.Column<DateTime>(DateType, nullable: false),
-                    City = table.Column<string>(nullable: true),
-                    Venue = table.Column<string>(nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Activities", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Comments",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(GuidType, nullable: false),
+                    Id = table.Column<Guid>(nullable: false),
                     Body = table.Column<string>(nullable: true),
-                    AuthorId = table.Column<string>(UserIdType, nullable: true),
-                    ActivityId = table.Column<Guid>(GuidType, nullable: true),
-                    CreatedAt = table.Column<DateTime>(DateType, nullable: false)
+                    AuthorId = table.Column<string>(nullable: true),
+                    ActivityId = table.Column<Guid>(nullable: true),
+                    CreatedAt = table.Column<DateTime>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -246,8 +202,8 @@ namespace Persistence.Migrations
                 name: "Follows",
                 columns: table => new
                 {
-                    ObserverId = table.Column<string>(UserIdType, nullable: false),
-                    TargetId = table.Column<string>(UserIdType, nullable: false)
+                    ObserverId = table.Column<string>(nullable: false),
+                    TargetId = table.Column<string>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -270,10 +226,10 @@ namespace Persistence.Migrations
                 name: "Photos",
                 columns: table => new
                 {
-                    Id = table.Column<string>(PhotoIdType, nullable: false),
+                    Id = table.Column<string>(nullable: false),
                     Url = table.Column<string>(nullable: true),
-                    IsMain = table.Column<bool>(BoolType, nullable: false),
-                    AppUserId = table.Column<string>(UserIdType, nullable: true)
+                    IsMain = table.Column<bool>(nullable: false),
+                    AppUserId = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {
@@ -287,13 +243,35 @@ namespace Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "RefreshToken",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Token = table.Column<string>(nullable: true),
+                    Expires = table.Column<DateTime>(nullable: false),
+                    Revoked = table.Column<DateTime>(nullable: true),
+                    AppUserId = table.Column<string>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RefreshToken", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_RefreshToken_AspNetUsers_AppUserId",
+                        column: x => x.AppUserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "UserActivities",
                 columns: table => new
                 {
-                    AppUserId = table.Column<string>(UserIdType, nullable: false),
-                    ActivityId = table.Column<Guid>(GuidType, nullable: false),
-                    DateJoined = table.Column<DateTime>(DateType, nullable: false),
-                    IsHost = table.Column<bool>(BoolType, nullable: false)
+                    AppUserId = table.Column<string>(nullable: false),
+                    ActivityId = table.Column<Guid>(nullable: false),
+                    DateJoined = table.Column<DateTime>(nullable: false),
+                    IsHost = table.Column<bool>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -321,7 +299,8 @@ namespace Persistence.Migrations
                 name: "RoleNameIndex",
                 table: "AspNetRoles",
                 column: "NormalizedName",
-                unique: true);
+                unique: true,
+                filter: "[NormalizedName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetUserClaims_UserId",
@@ -347,7 +326,8 @@ namespace Persistence.Migrations
                 name: "UserNameIndex",
                 table: "AspNetUsers",
                 column: "NormalizedUserName",
-                unique: true);
+                unique: true,
+                filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Comments_ActivityId",
@@ -367,6 +347,11 @@ namespace Persistence.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Photos_AppUserId",
                 table: "Photos",
+                column: "AppUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RefreshToken_AppUserId",
+                table: "RefreshToken",
                 column: "AppUserId");
 
             migrationBuilder.CreateIndex(
@@ -400,6 +385,9 @@ namespace Persistence.Migrations
 
             migrationBuilder.DropTable(
                 name: "Photos");
+
+            migrationBuilder.DropTable(
+                name: "RefreshToken");
 
             migrationBuilder.DropTable(
                 name: "UserActivities");

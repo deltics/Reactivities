@@ -44,13 +44,15 @@ namespace Application.User
             private DataContext _context;
             private readonly UserManager<AppUser> _userManager;
             private readonly IJwtGenerator _jwtGenerator;
+            private readonly IUserDtoCreator _userDtoCreator;
 
 
-            public Handler(DataContext context, UserManager<AppUser> userManager, IJwtGenerator jwtGenerator)
+            public Handler(DataContext context, UserManager<AppUser> userManager, IJwtGenerator jwtGenerator, IUserDtoCreator userDtoCreator)
             {
                 _context = context;
                 _userManager = userManager;
                 _jwtGenerator = jwtGenerator;
+                _userDtoCreator = userDtoCreator;
             }
 
 
@@ -101,13 +103,7 @@ namespace Application.User
                         throw new Exception("Unexpected error.  Unable to register user");
                 }
 
-                return new UserDto
-                {
-                    DisplayName = user.DisplayName,
-                    Username = user.UserName,
-                    Image = null,
-                    Token = _jwtGenerator.CreateToken(user)
-                };
+                return await _userDtoCreator.CreateUserDto(user);
             }
         }
     }

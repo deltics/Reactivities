@@ -72,7 +72,7 @@ class ActivityStore {
 
     @action connectCommentHub = (activityId: string) => {
         const hubUrl = process.env.REACT_APP_API_COMMENTHUB_URL!;
-        
+
         // Connects to /comments endpoint passing access_token as a query string parameter
         this.commentHub = new HubConnectionBuilder()
             .withUrl(hubUrl, {accessTokenFactory: () => this.rootStore.commonStore.token!})
@@ -140,9 +140,7 @@ class ActivityStore {
                 this.activityCount = envelope.activityCount;
             });
         } catch (err) {
-            runInAction('error loading activities', () => {
-                console.error(err);
-            });
+            console.error(err);
         } finally {
             runInAction('cleanup after loading activities', () => {
                 this.loading = false
@@ -157,7 +155,7 @@ class ActivityStore {
 
         if (registeredActivity) {
             this.activity = registeredActivity;
-            
+
             // registeredActivity is an observable because it is held in the store activity registry.
             //  When we return this object, the activity form tries to initialise the date/time which
             //  is modifying the object which is observable which is not allowed (observables may only
@@ -166,8 +164,8 @@ class ActivityStore {
             // To prevent this, we use the MobX toJS() fn which creates a non-observable deep-copy of
             //  a specified observable.  In this case toJS(registeredActivity) will yield a non-observable
             //  copy of the activity for us to return to the Activity Form.
-            
-            return toJS(registeredActivity);    
+
+            return toJS(registeredActivity);
         } else {
             this.loading = true;
             try {
@@ -186,9 +184,7 @@ class ActivityStore {
                 });
                 return activity;
             } catch (err) {
-                runInAction('error when loading specific activity', () => {
-                    console.error(err);
-                })
+                console.error(err);
             } finally {
                 runInAction('cleanup after loading specific activity', () => {
                     this.loading = false;
