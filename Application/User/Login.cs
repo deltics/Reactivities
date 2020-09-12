@@ -36,13 +36,15 @@ namespace Application.User
             private readonly UserManager<AppUser> _userManager;
             private readonly SignInManager<AppUser> _signInManager;
             private readonly IJwtGenerator _jwtGenerator;
+            private readonly IUserDtoCreator _userDtoCreator;
 
 
-            public Handler(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, IJwtGenerator jwtGenerator)
+            public Handler(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, IJwtGenerator jwtGenerator, IUserDtoCreator userDtoCreator)
             {
                 _userManager = userManager;
                 _signInManager = signInManager;
                 _jwtGenerator = jwtGenerator;
+                _userDtoCreator = userDtoCreator;
             }
 
 
@@ -56,15 +58,7 @@ namespace Application.User
                 if (!(signIn.Succeeded))
                     throw new RESTException(HttpStatusCode.Unauthorized);
 
-                var image = user.Photos.SingleOrDefault(x => x.IsMain);
-                
-                return new UserDto
-                {
-                    DisplayName = user.DisplayName,
-                    Username = user.Email,
-                    Image = image?.Url,
-                    Token = _jwtGenerator.CreateToken(user)
-                };
+                return await _userDtoCreator.CreateUserDto(user);
             }
         }
     }

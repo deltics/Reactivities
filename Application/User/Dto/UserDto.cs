@@ -1,4 +1,7 @@
-using System.ComponentModel;
+using System.Linq;
+using System.Text.Json.Serialization;
+using Domain;
+
 
 namespace Application.User
 {
@@ -8,5 +11,8 @@ namespace Application.User
         public string Token { get; set; }
         public string Username { get; set; }
         public string Image { get; set; }
+        
+        [JsonIgnore]
+        public string RefreshToken { get; set; }
     }
 }

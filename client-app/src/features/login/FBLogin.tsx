@@ -1,7 +1,6 @@
-import React, {useContext} from "react";
+import React from "react";
 import FacebookLogin from 'react-facebook-login/dist/facebook-login-render-props';
 import {Button, Icon} from "semantic-ui-react";
-import {RootStoreContext} from "../../app/stores/rootStore";
 
 
 const FBLogin: React.FC<{ callback: (response: any) => void, loading: boolean }> = ({callback, loading}) => {
